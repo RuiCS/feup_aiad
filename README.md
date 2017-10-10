@@ -17,4 +17,4 @@ Os agentes podem movimentar-se em todas as direções e extinguir o fogo atirand
 ## Material
 
 * [Introdução e conceitos gerais deste projeto](http://jasss.soc.surrey.ac.uk/13/1/4.html)
-* [Jason](http://jason.sourceforge.net/wp/)
+* [Jason](http://jason.sourceforge.net/mini-tutorial/eclipse-plugin/#id.iyxfqy5c7qw)
