@@ -20,3 +20,4 @@ Os agentes podem movimentar-se em todas as direções e extinguir o fogo atirand
 * [Jason](http://jason.sourceforge.net/mini-tutorial/eclipse-plugin/#id.iyxfqy5c7qw)
 * [Exemplo de 2005/2006](https://paginas.fe.up.pt/~eol/AIAD/TRABALHOS_ANT/Pyrofighter_0506.pdf)
 * [Getting started with Jason](http://jason.sourceforge.net/mini-tutorial/getting-started/)
+* [Agentspeak tutorial](http://jason.sourceforge.net/jBook/SlidesJason.pdf)
