@@ -18,3 +18,4 @@ Os agentes podem movimentar-se em todas as direções e extinguir o fogo atirand
 
 * [Introdução e conceitos gerais deste projeto](http://jasss.soc.surrey.ac.uk/13/1/4.html)
 * [Jason](http://jason.sourceforge.net/mini-tutorial/eclipse-plugin/#id.iyxfqy5c7qw)
+* [Exemplo de 2005/2006](https://paginas.fe.up.pt/~eol/AIAD/TRABALHOS_ANT/Pyrofighter_0506.pdf)
