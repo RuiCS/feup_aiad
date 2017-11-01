@@ -1,0 +1,12 @@
+MAS forestFires {
+
+	infrastructure: Jade
+
+	environment: Forest
+
+	agents:
+		firefighter;
+
+	aslSourcePath:
+		"src/asl";
+}
