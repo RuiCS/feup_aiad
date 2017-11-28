@@ -12,7 +12,8 @@ public class ForestPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private final int normalTile = 0;
 	private final int denseTile = 1;
-	private final int fireTile = 2;
+	private final int concreteTile = 2;
+	private final int fireTile = 3;
 	
 	private int offset = 20;
 	private int boxWidth = 10;
@@ -20,17 +21,56 @@ public class ForestPanel extends JPanel {
 	
 	private int[][] forest;
 	
-	public void initForest(int xSize, int ySize) {
+	/*public void initForest(int xSize, int ySize) {
 		int[][] temp = new int[xSize][ySize];
 		for (int i = 0; i < xSize; i++) {
 			for (int j = 0; j < ySize; j++) {
-				//temp[i][j] = normalTile;
-				
-				// testing colors: change this
-				temp[i][j] = (int)(Math.random()*3);
+				temp[i][j] = normalTile;
 			}
 		}
+		
+		temp = this.addCluster(temp, 1, 5, 5, 5);
+		
 		forest = temp;
+	}
+	*/
+	/*public int[][] addCluster(int[][] f, int type, int x, int y, int radius) {
+		for (int i = 0; i < f.length; i++) {
+			for (int j = 0; j < f[i].length; j++) {
+				if ((i > x && i < (x+radius)) || (i < x && i > (x+radius))) {
+					if  ((j > y && j < (y+radius)) || (j < x && j > (y+radius))) {
+						f[i][j] = type;
+					}
+				}
+			}
+		}
+		return f;
+	}*/
+	public void initForest(int a, int b) {
+		int[][] temp = {
+				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,1,0},
+				{0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1},
+				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0},
+				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0},
+				{0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,3,3,3,0,0,0,0,2,2,2,0,0},
+				{0,0,0,0,0,0,0,0,0,3,0,0,0,0,2,2,2,2,2,0},
+				{0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0},
+				{0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+				{0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+				{0,0,1,1,1,1,1,1,0,0,0,2,2,2,0,0,0,0,0,0},
+				{0,0,0,0,1,1,1,1,0,2,2,2,2,2,0,0,0,0,1,1},
+				{0,0,0,0,0,1,0,0,0,2,2,2,2,2,0,0,0,1,1,1},
+				{0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,1,0},
+		};
+		
+		forest=temp;
 	}
 	
 	public ForestPanel () {
@@ -45,12 +85,16 @@ public class ForestPanel extends JPanel {
 			for(int j = 0; j < forest[i].length; j++) {
 				switch (forest[i][j]){
 					case(normalTile): { 
-						g.setColor(Color.getHSBColor((float)0.33,(float)0.6,(float)1.0));
+						g.setColor(Color.GREEN);
 						break; 
 					}
 					case(denseTile): {
-						g.setColor(Color.getHSBColor((float)0.33,(float)1.0,(float)0.4));
+						g.setColor(Color.getHSBColor((float)0.33,(float)1.0,(float)0.5));
 						break; 
+					}
+					case(concreteTile): {
+						g.setColor(Color.GRAY);
+						break;
 					}
 					case(fireTile): { 
 						g.setColor(Color.RED);
