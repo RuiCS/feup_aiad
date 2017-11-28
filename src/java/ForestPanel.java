@@ -6,6 +6,10 @@ import javax.swing.JPanel;
 
 public class ForestPanel extends JPanel {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private final int normalTile = 0;
 	private final int denseTile = 1;
 	private final int fireTile = 2;
