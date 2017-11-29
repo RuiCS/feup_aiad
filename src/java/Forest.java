@@ -14,15 +14,29 @@ public class Forest extends Environment {
     public void init(String[] args) {	 
     }
 
+    public Forest() {
+    	new Thread() {
+    		public void run() {
+    			try {
+    				while (isRunning()) {
+    					gui.panel.spreadFire();
+    					Thread.sleep(1000);
+    				}
+    			} catch (Exception e) {}
+    		}
+    	}.start();
+    }
+    
     @Override
     public boolean executeAction(String agName, Structure action) {
-      if (action.getFunctor().equals("burn")) {
-        addPercept(Literal.parseLiteral("fire"));
-        return true;
-      } else {
-        logger.info("executing: "+action+", but not implemented!");
-        return false;
-      }
+    	try { Thread.sleep(500);}  catch (Exception e) {} // slow down the execution
+    	if (action.getFunctor().equals("burn")) {
+    		addPercept(Literal.parseLiteral("fire"));
+    		return true;
+    	} else {
+    		logger.info("executing: "+action+", but not implemented!");
+    		return false;
+    	}
     }
 
     /** Called before the end of MAS execution */

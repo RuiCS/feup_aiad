@@ -6,7 +6,7 @@ public class ForestGUI extends JFrame {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private ForestPanel panel;
+	public ForestPanel panel;
 	public ForestGUI() {
 		panel = new ForestPanel();
 		this.setContentPane(panel);
