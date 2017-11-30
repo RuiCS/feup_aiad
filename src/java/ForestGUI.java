@@ -14,4 +14,8 @@ public class ForestGUI extends JFrame {
         setVisible(true);
 	}
 	
+	public ForestPanel getForestPanel() {
+		return panel;
+	}
+	
 }

@@ -191,4 +191,8 @@ public class ForestPanel extends JPanel {
 		}
 	}
 	
+	public int[][] getForest() {
+		return forest;
+	}
+	
 }

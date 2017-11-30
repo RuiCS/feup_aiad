@@ -30,8 +30,12 @@ public class Forest extends Environment {
     @Override
     public boolean executeAction(String agName, Structure action) {
     	try { Thread.sleep(500);}  catch (Exception e) {} // slow down the execution
-    	if (action.getFunctor().equals("burn")) {
-    		addPercept(Literal.parseLiteral("fire"));
+    	String functor = action.getFunctor();
+    	if (functor.equals("checkSurroundings")) {
+    		Firefighter.checkSurroundings(this, action);
+    		return true;
+    	} else if (functor.equals("run")) {
+    		Firefighter.run(this, action);
     		return true;
     	} else {
     		logger.info("executing: "+action+", but not implemented!");
@@ -43,6 +47,10 @@ public class Forest extends Environment {
     @Override
     public void stop() {
       super.stop();
+    }
+    
+    public int[][] getForest() {
+    	return gui.getForestPanel().getForest();
     }
     
 }
