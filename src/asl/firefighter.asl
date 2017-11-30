@@ -1,23 +1,26 @@
-// Agent firefighter in project forestFires
+/**
+ * This file implements the firefigher agent
+ */
 
-/* Initial beliefs and rules */
+/* --- Initial beliefs and rules --- */
 
 alive(true).		// i'm alive
-safe(true).			// no fire around me
+safe(true).			// there is no fire near me
 pos(0, 0).			// i'm at position (0,0)
-pos(clear).			// there's no fire here
 
-/* Initial goals */
 
-!start.				// start
-!stayAlive.			// duh
+/* --- Initial goals --- */
 
-/* Plans */
+!start.				// i want to start thinking
+!stayAlive.			// i want to stay alive as long as possible
+
+
+/* --- Plans --- */
 
 +!start : true <-
-	.print("hello world.");
+	init;
 	?pos(X, Y);
-	.print("pos(", X, ", ", Y, ")").
+	.print("Initializing Firefighter Agent at pos (", X, ", ", Y, ")").
 	
 +!stayAlive : true <-
 	?pos(X, Y);

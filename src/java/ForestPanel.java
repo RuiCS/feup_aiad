@@ -15,6 +15,7 @@ public class ForestPanel extends JPanel {
 	private final int denseTile = 1;
 	private final int concreteTile = 2;
 	private final int fireTile = 3;
+	public static final int FIREFIGHTER = 4;
 	
 	private int offset = 20;
 	private int boxWidth = 10;
@@ -182,6 +183,10 @@ public class ForestPanel extends JPanel {
 						g.setColor(Color.RED);
 						break; 
 					}
+					case(FIREFIGHTER): { 
+						g.setColor(Color.ORANGE);
+						break; 
+					}
 					default: break;
 				}
 				g.drawRect(offset+boxSpacing*i,offset+boxSpacing*j,boxWidth,boxWidth);
@@ -191,8 +196,12 @@ public class ForestPanel extends JPanel {
 		}
 	}
 	
+    /**
+     * Getter
+     * 
+     * @return Matrix representing the current environment
+     */
 	public int[][] getForest() {
 		return forest;
 	}
-	
 }
