@@ -10,15 +10,20 @@ public class ForestPanel extends JPanel {
 	/**
 	 * 
 	 */
+	// TODO renaming and cleaning
 	private static final long serialVersionUID = 1L;
 	private final int normalTile = 0;
 	private final int denseTile = 1;
 	private final int concreteTile = 2;
 	private final int fireTile = 3;
 	public static final int FIREFIGHTER = 4;
+	public static final int FIRETILE = 3;
+	public static final int NORMALTILE = 0;
 	
 	private int offset = 20;
 	private int boxWidth = 10;
+	public static final int WIDTH = 20;
+	public static final int HEIGHT = 20;
 	private int boxSpacing = 12;
 	
 	private int[][] forest;
