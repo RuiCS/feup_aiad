@@ -28,7 +28,7 @@ public class ForestPanel extends JPanel {
 	// Where the game is set
 	private int[][] forest;
 	// Game's last state for clearing
-	private int[][] lastState;
+	private int[][] initialState;
 	
 	// Wind variables
 	private int windX;
@@ -37,19 +37,40 @@ public class ForestPanel extends JPanel {
 	// array for storing firefighters and their information
 	private ArrayList<Firefighter> firefighters;
 	
-	public void initForest(int xSize, int ySize) {
+	/*public void initForest(int xSize, int ySize) {
 		int[][] temp = new int[xSize][ySize];
-		for (int i = 0; i < xSize; i++) {
-			for (int j = 0; j < ySize; j++) {
+		for (int i = 0; i < ySize; i++) {
+			for (int j = 0; j < xSize; j++) {
 				temp[i][j] = normalTile;
 			}
 		}
 		
+		// TODO change this, this is a random board
+		for (int i = 0; i < 6; i++) {
+			Random r = new Random();
+			
+			int clusterType = r.nextInt(3);
+			int x = r.nextInt(temp.length);
+			int y = r.nextInt(temp[x].length);
+			int xS = r.nextInt(15);
+			int yS = r.nextInt(15);
+			int tileType = r.nextInt(4);
+			
+			while(tileType == fireTile || tileType == normalTile) tileType = r.nextInt(3);
+			
+			temp = this.addCluster(temp, clusterType, tileType, x, y, xS, yS);
+			
+		}
+		
+		// TODO change this
+		windX = -30;
+		windY = -30;
+		
 		forest = temp;
-		lastState=forest;
-	}
+		initialState=forest;
+	}*/
 	
-	/*public void initForest(int a, int b) {
+	public void initForest(int a, int b) {
 		int[][] temp = {
 				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 				{0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,1,0},
@@ -75,28 +96,12 @@ public class ForestPanel extends JPanel {
 		windX = -30;
 		windY = -30;
 		forest=temp;
-		lastState=forest;
-	}*/
+		initialState=forest;
+	}
 	
 	public ForestPanel () {		
 		this.initForest(40,40);
-		this.initFirefighters(1);
-		/*for (int i = 0; i < 6; i++) {
-			Random r = new Random();
-			
-			int clusterType = r.nextInt(3);
-			int x = r.nextInt(forest.length);
-			int y = r.nextInt(forest[x].length);
-			int xSize = r.nextInt(15);
-			int ySize = r.nextInt(15);
-			int tileType = r.nextInt(4);
-			
-			while(tileType == fireTile || tileType == normalTile) tileType = r.nextInt(3);
-			
-			this.addCluster(clusterType, tileType, x, y, xSize, ySize);
-			
-		}*/
-		
+		this.initFirefighters(3);
 		this.setPreferredSize(new Dimension(this.forest.length*15,this.forest.length*15));
 	}
 	
@@ -110,19 +115,21 @@ public class ForestPanel extends JPanel {
 	}
 	
 	public void addFirefighter(int x, int y) {
-		this.firefighters.add(new Firefighter(x,y));
+		this.firefighters.add(new Firefighter(x,y,forest.length, forest[0].length));
 	}
 	
-	public void addCluster(int clusterType, int tileType, int x, int y, int xSize, int ySize) {
+	public int[][] addCluster(int[][] f, int clusterType, int tileType, int x, int y, int xSize, int ySize) {
+		
+		int[][] temp = f;
 		
 		switch (clusterType) {
 		
 			// Circle
 			case 0: {
-				for (int i = 0; i < forest.length; i++) {
-					for(int j = 0; j < forest[i].length; j++) {
+				for (int i = 0; i < temp.length; i++) {
+					for(int j = 0; j < temp[i].length; j++) {
 						if ( ((j - x)*(j - x) + (i - y)*(i - y)) <= xSize*xSize) {
-							forest[i][j] = tileType;
+							temp[i][j] = tileType;
 						}
 					}
 				}
@@ -131,14 +138,14 @@ public class ForestPanel extends JPanel {
 			
 			// Square
 			case 1: {
-				for (int i = 0; i < forest.length; i++) {
-					for(int j = 0; j < forest[i].length; j++) {
+				for (int i = 0; i < temp.length; i++) {
+					for(int j = 0; j < temp[i].length; j++) {
 						if ( Math.abs(j-x) <= xSize/2 ) {
 							if ( Math.abs(i-y) <= ySize/2) {
-								if(j < 0 || i < 0 || i > (forest.length-1) || j > (forest[i].length-1)) {
+								if(j < 0 || i < 0 || i > (temp.length-1) || j > (temp[i].length-1)) {
 									continue;
 								}else {
-									forest[i][j] = tileType;
+									temp[i][j] = tileType;
 								}
 							}
 						}
@@ -154,21 +161,17 @@ public class ForestPanel extends JPanel {
 				for (int i = -ySize; i<= ySize; i++) {
 					for (int j = -xSize; j<= xSize; j++) {
 						if (j*j*ySize*ySize + i*i*xSize*xSize <= ySize*ySize*xSize*xSize) {
-							if ( x+j < 0 || y+i < 0 || x+j >= forest.length || y+i >= forest[0].length ) {
+							if ( x+j < 0 || y+i < 0 || x+j >= temp.length || y+i >= temp[0].length ) {
 								continue;
 							}
-							else forest[x+j][y+i] = tileType;
+							else temp[x+j][y+i] = tileType;
 						}
 					}
 				}
 			}
 			default: break;
 		}
-		
-	}
-	
-	public void saveLastState() {
-		this.lastState = this.forest;
+		return temp;
 	}
 	
 	public void spreadFire() {
@@ -201,7 +204,7 @@ public class ForestPanel extends JPanel {
 				}
 				
 				for (Firefighter f : this.firefighters) {
-					if (f.x == j && f.y == i) g.setColor(Color.BLUE);
+					if (f.x == i && f.y == j) g.setColor(Color.BLUE);
 				}
 				
 				g.drawRect(offset+boxSpacing*i,offset+boxSpacing*j,boxWidth,boxWidth);
