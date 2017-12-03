@@ -11,15 +11,17 @@ public class Forest extends Environment {
     
     /** Called before the MAS execution with the args informed in .mas2j */
     @Override
-    public void init(String[] args) {	 
+    public void init(String[] args) {
     }
 
     public Forest() {
     	new Thread() {
     		public void run() {
     			try {
-    				while (isRunning()) {
-    					gui.panel.spreadFire();
+    				while (isRunning()) {    			
+    					if (gui.panel != null) {
+        					gui.panel.spreadFire();
+    					}
     					Thread.sleep(1000);
     				}
     			} catch (Exception e) {}

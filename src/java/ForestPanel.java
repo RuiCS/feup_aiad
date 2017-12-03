@@ -37,7 +37,9 @@ public class ForestPanel extends JPanel {
 	// array for storing firefighters and their information
 	private ArrayList<Firefighter> firefighters;
 	
-	/*public void initForest(int xSize, int ySize) {
+	public void initRandomForest(int xSize, int ySize) {
+
+		Random r = new Random();
 		int[][] temp = new int[xSize][ySize];
 		for (int i = 0; i < ySize; i++) {
 			for (int j = 0; j < xSize; j++) {
@@ -45,15 +47,13 @@ public class ForestPanel extends JPanel {
 			}
 		}
 		
-		// TODO change this, this is a random board
-		for (int i = 0; i < 6; i++) {
-			Random r = new Random();
+		for (int i = 0; i < 5; i++) {
 			
 			int clusterType = r.nextInt(3);
 			int x = r.nextInt(temp.length);
 			int y = r.nextInt(temp[x].length);
-			int xS = r.nextInt(15);
-			int yS = r.nextInt(15);
+			int xS = r.nextInt(10);
+			int yS = r.nextInt(10);
 			int tileType = r.nextInt(4);
 			
 			while(tileType == fireTile || tileType == normalTile) tileType = r.nextInt(3);
@@ -61,16 +61,21 @@ public class ForestPanel extends JPanel {
 			temp = this.addCluster(temp, clusterType, tileType, x, y, xS, yS);
 			
 		}
+			
+		int fires = r.nextInt(3)+1;
+		for (int i = 0; i < fires; i++) {
+			this.addCluster(temp, r.nextInt(2), fireTile, r.nextInt(temp.length), r.nextInt(temp[0].length), r.nextInt(3), r.nextInt(3));
+		}
 		
-		// TODO change this
-		windX = -30;
-		windY = -30;
+		int sign = r.nextBoolean() ? 1 : -1;
+		windX = r.nextInt(100) * sign;
+		windY = r.nextInt(100) * sign;
 		
 		forest = temp;
 		initialState=forest;
-	}*/
+	}
 	
-	public void initForest(int a, int b) {
+	/*public void initForest(int a, int b) {
 		int[][] temp = {
 				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 				{0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,1,0},
@@ -97,13 +102,34 @@ public class ForestPanel extends JPanel {
 		windY = -30;
 		forest=temp;
 		initialState=forest;
+	}*/
+	
+	public ForestPanel () {			
+		/*this.initForest(40,40);
+		this.initFirefighters(3);
+		this.setPreferredSize(new Dimension(this.forest.length*15,this.forest.length*15));*/
 	}
 	
-	public ForestPanel () {		
-		this.initForest(40,40);
-		this.initFirefighters(3);
+
+	public ForestPanel(int posX, int posY, int windX, int windY, int[][]forest) {
+		this.windX = windX;
+		this.windY = windY;
+		// TODO change
+		this.forest = forest;
+		this.initialState = forest;
+
+		this.initFirefighters(5);
 		this.setPreferredSize(new Dimension(this.forest.length*15,this.forest.length*15));
 	}
+	
+	
+	public ForestPanel(String dummy) {
+		// TODO change
+		this.initRandomForest(40,40);
+		this.initFirefighters(5);
+		this.setPreferredSize(new Dimension(this.forest.length*15,this.forest.length*15));
+	}
+	
 	
 	public void initFirefighters(int num) {
 		this.firefighters = new ArrayList<Firefighter>();
