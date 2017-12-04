@@ -2,48 +2,42 @@
  * This file implements the firefigher agent
  */
 
-/* --- Initial beliefs and rules --- */
+/* --- Possible beliefs / perceptions --- */
 
-alive(true).			// i'm alive
-safe(true).				// there is no fire near me
-pos(0, 0).				// i'm at position (0,0)
-extinguished(false).	// true only when ALL the fire has been extinguished
-facing(up).				// direction the agent is facing (up, down, left, right).
-						// the agent can only extinguish fires in the direction he's currently facing
-
+// pos(X, Y)  			the current position of the agent
+// facing(Dir) 			direction the agent is facing. Can only extinguish fires in that direction
+// extinguished(true) 	when all the fires have been extinguished
 
 /* --- Initial goals --- */
 
 !start.				// i want to start thinking
-//!stayAlive.			// i want to stay alive as long as possible
-!extinguishFire.	// i want to extinguish ALL fire
 
 
 /* --- Plans --- */
 
+/**
+ * Start the agent.
+ * Add it to the environment (forest).
+ * Agent wants to extinguish the fire.
+ */
 +!start : true <-
-	init.
-	
-+!stayAlive : true <-
-	?pos(X, Y);
-	checkSurroundings(X, Y);
-	?safe(false);
-	.print("I'm not safe here, I need to run!");
-	run(X, Y);
-	?pos(X2, Y2);
-	.print("pos(", X2, ", ", Y2, ")");
-	!stayAlive.
-	
--!stayAlive: true <- !stayAlive.
-
-
-+!extinguishFire : extinguished(false) <-
-	?pos(X, Y);
-	goToNearestFire(X, Y);
-	?facing(Dir);
-	?pos(NX, NY);
-	.print("[self] My position is (", NX, ", ", NY,"). I'm facing '", Dir,"'.");
-	extinguishFire(Dir, NX, NY);
+	init;
 	!extinguishFire.
 
-//+! extinguishFire : extinguished(true) <- true.
+
+/**
+ * Go to the nearest fire.
+ * Extinguish that fire.
+ * Repeat.
+ */
+ // main
++!extinguishFire : not extinguished(true) <-
+	?pos(X, Y);
+	goToNearestFire(X, Y);
+	?facing(NDir);
+	?pos(NX, NY);
+	extinguishFire(NDir, NX, NY);
+	!extinguishFire.
+
+// stop	
++!extinguishFire : extinguished(true) <- true.

@@ -1,7 +1,5 @@
 // Environment code for project forestFires
 
-import jason.JasonException;
-import jason.asSemantics.Agent;
 import jason.asSyntax.*;
 import jason.environment.*;
 import java.util.logging.*;
@@ -22,8 +20,8 @@ public class Forest extends Environment {
     		public void run() {
     			try {
     				while (isRunning()) {
-    					//gui.panel.spreadFire();
-    					//Thread.sleep(1000);
+    					gui.panel.spreadFire();
+    					Thread.sleep(1000);
     				}
     			} catch (Exception e) {}
     		}

@@ -1,12 +1,11 @@
-import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import jason.asSyntax.Atom;
 import jason.asSyntax.Literal;
 import jason.asSyntax.NumberTerm;
-import jason.asSyntax.StringTerm;
 import jason.asSyntax.Structure;
 
-/** TODO beliefs are not considered percepts... hwo to check? (when all fires are extinguished)
+/**
  * This class implements the firefighter agent's actions
  */
 public abstract class Firefighter {		
@@ -34,14 +33,6 @@ public abstract class Firefighter {
     		case "init":
     			init(forest, agName);
     			break;
-    			
-			case "checkSurroundings":
-				checkSurroundings(forest, agName, action);
-				break;
-				
-			case "run":
-				run(forest, agName, action);
-				break;
 				
 			case "goToNearestFire":
 				goToNearestFire(forest, agName, action);
@@ -52,7 +43,7 @@ public abstract class Firefighter {
 				break;
 				
 			default:
-				System.out.println("[" + agName +"] Action \' " + action + "\', not implemented!");
+				System.out.println("[" + agName +"] Action ' " + action + "', not implemented!");
 	    		return false;
 		}
     	
@@ -62,79 +53,29 @@ public abstract class Firefighter {
 	
 	/**
 	 * Places the newly created firefighter in the forest
-	  * and updates its beliefs accordingly
-	  * 
+	 * and updates its beliefs accordingly
+	 * 
 	 * @param forest Current environment
 	 * @param agName Name of the agent
 	 */
 	public static void init(Forest forest, String agName) {
 		
-		// TODO they can't ALL start in the same position, right?
+		// TODO proper initial position
 		
-		// initial position
-		int x = 0;
-		int y = 0;
+		// initial position and direction
+		int x = ThreadLocalRandom.current().nextInt(0, ForestPanel.WIDTH);
+		int y = ThreadLocalRandom.current().nextInt(0, ForestPanel.HEIGHT);;
+		String dir = "down";
 		
 		// place agent on the environment
 		forest.getForest()[y][x] = ForestPanel.FIREFIGHTER;
 		
-		
 		// update agent beliefs
 		forest.addPercept(agName, Literal.parseLiteral("pos(" + x + ", " + y + ")"));
+		forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
 		
 		// verbose
-		System.out.println("[" + agName + "] Initializing at (0, 0).");
-	}
-	
-
-	/** TODO incomplete
-	 * Tells the agent if there's a fire in his surroundings
-	 * 
-	 * @param forest Current environment
-	 * @param agName Name of the agent
-	 * @param action Action requested by the agent
-	 */
-	public static void checkSurroundings(Forest forest, String agName, Structure action) {
-		
-		try {
-			// get pos
-			int x = (int)((NumberTerm)action.getTerm(0)).solve();
-	        int y = (int)((NumberTerm)action.getTerm(1)).solve();
-			
-			// if there's fire to the right, he aint safe
-			if (forest.getForest()[x + 1][y] == 3) {
-				forest.addPercept(agName, Literal.parseLiteral("safe(false)"));
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	
-	/** TODO incomplete
-	 * Moves the agent away from the fire
-	 * 
-	 * @param forest Current environment
-	 * @param agName Name of the agent
-	 * @param action Action requested by the agent
-	 */
-	public static void run(Forest forest, String agName, Structure action) {
-		
-		try {
-			// get pos
-			int x = (int)((NumberTerm)action.getTerm(0)).solve();
-	        int y = (int)((NumberTerm)action.getTerm(1)).solve();
-	        
-	        // place agent on the environment
-			forest.getForest()[y+1][x] = 4;
-			
-	        // update agent beliefs
-	        forest.addPercept(agName, Literal.parseLiteral("pos(" + x + ", " + (y + 1) + ")"));
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		System.out.println("[" + agName + "] Initializing at (" + x + ", " + y + "). Facing '" + dir + "'.");
 	}
 	
 	
@@ -185,21 +126,15 @@ public abstract class Firefighter {
 	        	}
 	        }
 	        
-	        // there is no fire
+	        // if there is no fire
 	        if (firex == ForestPanel.WIDTH && firey == ForestPanel.HEIGHT) {
 	        	
-	        	if (forest.containsPercept(agName, Literal.parseLiteral("extinguished(false)")))
-	        		System.out.println("YES1");
-	        	
 		     	// update agent beliefs
+	        	forest.removePerceptsByUnif(agName, Literal.parseLiteral("extinguished(X)"));
 		        forest.addPercept(agName, Literal.parseLiteral("extinguished(true)"));
 		        
-	        	if (forest.containsPercept(agName, Literal.parseLiteral("extinguished(true)")))
-	        		System.out.println("YES2");
-		        
 		        // verbose
-		        System.out.println("[" + agName + "] All the fires have been extinguished!");
-		        System.out.println(forest.consultPercepts(agName).size());
+		        System.out.println("[" + agName + "] No fires located!");
 		        
 		        return;
 	        }
@@ -234,22 +169,21 @@ public abstract class Firefighter {
 	        	newx = firex - 1;
 	        	dir = "right";
 	        }
-	        // verbose
 	        else {
+	        	// verbose
 		        System.out.println("[" + agName + "] There is no safe spot around the fire located at (" + firex + ", " + firey + ")!");
 	        }
 	        
 	        // place agent on the environment
 	        mforest[newy][newx] = ForestPanel.FIREFIGHTER;
-	        
-	        System.out.println(forest.consultPercepts(agName).size());
-	        forest.clearPercepts(agName);
-	        System.out.println(forest.consultPercepts(agName).size());
 	     			
 	     	// update agent beliefs
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
 	        forest.addPercept(agName, Literal.parseLiteral("pos(" + newx + ", " + newy + ")"));
+	        
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
 	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
-	        System.out.println(forest.consultPercepts(agName).size());
+	        
 	        
 	        // verbose
 	        System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
@@ -260,6 +194,7 @@ public abstract class Firefighter {
 			e.printStackTrace();
 		}
 	}
+	
 	
 	/**
 	 * Extinguishes fire in the direction the agent is facing
@@ -282,6 +217,15 @@ public abstract class Firefighter {
 	        // verbose
 	        int firex = 0;
 	        int firey = 0;
+	        
+	        // check if goToNearestFire couldn't locate a fire
+	        if (forest.containsPercept(agName, Literal.parseLiteral("extinguished(true)"))) {
+	        	
+		        // verbose
+		        System.out.println("[" + agName + "] All the fires have been extinguished!");
+		        
+	        	return;
+	        }
 	        
 	        switch (dir) {
 	        
