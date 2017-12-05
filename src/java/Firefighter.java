@@ -1,3 +1,5 @@
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 
 import jason.asSyntax.Atom;
@@ -76,6 +78,7 @@ public abstract class Firefighter {
 		
 		// update agent beliefs
 		forest.addPercept(agName, Literal.parseLiteral("pos(" + x + ", " + y + ")"));
+		try { Thread.sleep(100);} catch (Exception e) {}
 		forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
 		
 		// verbose
@@ -144,43 +147,81 @@ public abstract class Firefighter {
 	        }
 	        
 	        // new agent pos and direction
-	        int newx = 0;
-	        int newy = 0;
-	        String dir = "up"; //agent must face somewhere
+	        int newx = x;
+	        int newy = y;
+	        String dir = "down";
 	        
-	        // find safe spot near the nearest fire
-	        // down
-	        if (firey+1 < ForestPanel.HEIGHT && mforest[firey+1][firex] != ForestPanel.FIRETILE
-	        		&& mforest[firey+1][firex] != ForestPanel.FIREFIGHTER
-	        		 && mforest[firey+1][firex] != ForestPanel.PEOPLETILE) {	
-	        	newy = firey + 1;
-	        	newx = firex;
-	        	dir = "up";
-	        }
-	        // right
-	        else if (firex+1 < ForestPanel.WIDTH && mforest[firey][firex+1] != ForestPanel.FIRETILE 
-	        		&& mforest[firey][firex+1] != ForestPanel.FIREFIGHTER
-	        		&& mforest[firey][firex+1] != ForestPanel.PEOPLETILE) {	
-	        	newy = firey;
-	        	newx = firex + 1;
-	        	dir = "left";
-	        }
+	        // distance to cells around nearest fire
+	        int upd = fired;
+	        int downd = fired;
+	        int leftd = fired;
+	        int rightd = fired;	
+	        
+	        // find possible safe spots near the nearest fire
 	        // up
-	        else if (firey-1 > 0 && mforest[firey-1][firex] != ForestPanel.FIRETILE 
-	        		&& mforest[firey-1][firex] != ForestPanel.FIREFIGHTER
-	        		&& mforest[firey-1][firex] != ForestPanel.PEOPLETILE) {	
-	        	newy = firey - 1;
-	        	newx = firex;
-	        	dir = "down";
+	        if (firey-1 > 0 
+	        		&& mforest[firey-1][firex] != ForestPanel.FIRETILE 
+	        		&& (mforest[firey-1][firex] != ForestPanel.FIREFIGHTER
+	        				|| (firey-1 == y  && firex == x))
+	        		&& mforest[firey-1][firex] != ForestPanel.PEOPLETILE
+	        		) {	
+	        	upd = Math.abs(firey-1 - y) + Math.abs(firex - x);
+	        }
+	        // down
+	        if (firey+1 < ForestPanel.HEIGHT 
+	        		&& mforest[firey+1][firex] != ForestPanel.FIRETILE
+	        		&& (mforest[firey+1][firex] != ForestPanel.FIREFIGHTER
+	        				|| (firey+1 == y  && firex == x))
+	        		&& mforest[firey+1][firex] != ForestPanel.PEOPLETILE
+	        		) {	
+	        	downd = Math.abs(firey+1 - y) + Math.abs(firex - x);
 	        }
 	        // left
-	        else if (firex-1 > 0 && mforest[firey][firex-1] != ForestPanel.FIRETILE 
-	        		&& mforest[firey][firex-1] != ForestPanel.FIREFIGHTER
-	        		&& mforest[firey][firex-1] != ForestPanel.PEOPLETILE) {	
+	        if (firex-1 > 0 
+	        		&& mforest[firey][firex-1] != ForestPanel.FIRETILE 
+	        		&& (mforest[firey][firex-1] != ForestPanel.FIREFIGHTER
+	        				|| (firey == y  && firex-1 == x))
+	        		&& mforest[firey][firex-1] != ForestPanel.PEOPLETILE
+	        		) {	
+	        	leftd = Math.abs(firey - y) + Math.abs(firex-1 - x);
+	        }
+	        // right
+	        if (firex+1 < ForestPanel.WIDTH 
+	        		&& mforest[firey][firex+1] != ForestPanel.FIRETILE 
+	        		&& (mforest[firey][firex+1] != ForestPanel.FIREFIGHTER
+	        				|| (firey == y  && firex+1 == x))
+	        		&& mforest[firey][firex+1] != ForestPanel.PEOPLETILE
+	        		) {	
+	        	rightd = Math.abs(firey - y) + Math.abs(firex+1 - x);
+	        }
+	        
+	        // find nearest safe spot of all possible safe spots
+	        int mind = Collections.min(Arrays.asList(upd, downd, leftd, rightd));	        
+	       
+	        // up
+	        if (mind == upd && upd != fired) {
+	        	newx = firex;
+	        	newy = firey-1;
+	        	dir = "down";
+	        }
+	        // down
+	        else if (mind == downd && downd != fired) {
+	        	newx = firex;
+	        	newy = firey+1;
+	        	dir = "up";
+	        }
+	        // left
+	        else if (mind == leftd && leftd != fired) {
+	        	newx = firex-1;
 	        	newy = firey;
-	        	newx = firex - 1;
 	        	dir = "right";
 	        }
+	        // right
+	        else if (mind == rightd && rightd != fired) {
+	        	newx = firex+1;
+	        	newy = firey;
+	        	dir = "left";
+	        }	        
 	        else {
 	        	// verbose
 		        System.out.println("[" + agName + "] There is no safe spot around the fire located at (" + firex + ", " + firey + ")!");
@@ -189,21 +230,24 @@ public abstract class Firefighter {
 	        // place agent on the environment
 	        mforest[y][x] = ForestPanel.NORMALTILE;
 	        mforest[newy][newx] = ForestPanel.FIREFIGHTER;
-	        System.out.println("[" + agName + "] Cleaned (" + x + " " + y + ")[" + mforest[y][x] + "] and going to (" + newx + " " + newy + ")[" + mforest[newy][newx] +"]");
+	        
+	        // verbose
+	        System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
+	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
+	        System.out.println("[" + agName + "] Cleared (" + x + ", " + y + ")[" + mforest[y][x] + "] and went to (" + newx + " " + newy + ")[" + mforest[newy][newx] +"]");
 	        
 	     			
 	     	// update agent beliefs
 	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
 	        forest.addPercept(agName, Literal.parseLiteral("pos(" + newx + ", " + newy + ")"));
 	        
+	        Thread.sleep(100);
+	        
 	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
 	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
 	        
 	        
-	        // verbose
-	        System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
-	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
-
+	       
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -245,7 +289,7 @@ public abstract class Firefighter {
 	        switch (dir) {
 	        
 				case "up":
-					mforest[y-1][x] = ForestPanel.NORMALTILE; //TODO: isto deu outofbounds exception
+					mforest[y-1][x] = ForestPanel.NORMALTILE; 
 					
 					// verbose
 					firex = x;
@@ -365,42 +409,80 @@ public abstract class Firefighter {
 	        }
 	        
 	        // new agent pos and direction
-	        int newx = 0;
-	        int newy = 0;
-	        String dir = "up"; //agent must face somewhere
+	        int newx = x;
+	        int newy = y;
+	        String dir = "down";
 	        
-	        // find safe spot near the nearest victim
+	        // distance to cells around nearest fire
+	        int upd = peopled;
+	        int downd = peopled;
+	        int leftd = peopled;
+	        int rightd = peopled;	
+	        
+	        // find possible safe spots near the nearest victim
+	        // up
+	        if (peopley-1 > 0 
+	        		&& mforest[peopley-1][peoplex] != ForestPanel.FIRETILE 
+	        		&& (mforest[peopley-1][peoplex] != ForestPanel.FIREFIGHTER
+	        				|| (peopley-1 == y  && peoplex == x))
+	        		&& mforest[peopley-1][peoplex] != ForestPanel.PEOPLETILE
+	        		) {	
+	        	upd = Math.abs(peopley-1 - y) + Math.abs(peoplex - x);
+	        }
 	        // down
 	        if (peopley+1 < ForestPanel.HEIGHT 
-	        		&& mforest[peopley+1][peoplex] != ForestPanel.PEOPLETILE 
-	        		&& mforest[peopley+1][peoplex] != ForestPanel.FIREFIGHTER) {	
-	        	newy = peopley + 1;
-	        	newx = peoplex;
-	        	dir = "up";
-	        }
-	        // right
-	        else if (peoplex+1 < ForestPanel.WIDTH 
-	        		&& mforest[peopley][peoplex+1] != ForestPanel.PEOPLETILE 
-	        		&& mforest[peopley][peoplex+1] != ForestPanel.FIREFIGHTER) {	
-	        	newy = peopley;
-	        	newx = peoplex + 1;
-	        	dir = "left";
-	        }
-	        // up
-	        else if (peopley-1 > 0 
-	        		&& mforest[peopley-1][peoplex] != ForestPanel.PEOPLETILE 
-	        		&& mforest[peopley-1][peoplex] != ForestPanel.FIREFIGHTER) {	
-	        	newy = peopley - 1;
-	        	newx = peoplex;
-	        	dir = "down";
+	        		&& mforest[peopley+1][peoplex] != ForestPanel.FIRETILE
+	        		&& (mforest[peopley+1][peoplex] != ForestPanel.FIREFIGHTER
+	        				|| (peopley+1 == y  && peoplex == x))
+	        		&& mforest[peopley+1][peoplex] != ForestPanel.PEOPLETILE
+	        		) {	
+	        	downd = Math.abs(peopley+1 - y) + Math.abs(peoplex - x);
 	        }
 	        // left
-	        else if (peoplex-1 > 0 
-	        		&& mforest[peopley][peoplex-1] != ForestPanel.PEOPLETILE 
-	        		&& mforest[peopley][peoplex-1] != ForestPanel.FIREFIGHTER) {	
+	        if (peoplex-1 > 0 
+	        		&& mforest[peopley][peoplex-1] != ForestPanel.FIRETILE 
+	        		&& (mforest[peopley][peoplex-1] != ForestPanel.FIREFIGHTER
+	        				|| (peopley == y  && peoplex-1 == x))
+	        		&& mforest[peopley][peoplex-1] != ForestPanel.PEOPLETILE
+	        		) {	
+	        	leftd = Math.abs(peopley - y) + Math.abs(peoplex-1 - x);
+	        }
+	        // right
+	        if (peoplex+1 < ForestPanel.WIDTH 
+	        		&& mforest[peopley][peoplex+1] != ForestPanel.FIRETILE 
+	        		&& (mforest[peopley][peoplex+1] != ForestPanel.FIREFIGHTER
+	        				|| (peopley == y  && peoplex+1 == x))
+	        		&& mforest[peopley][peoplex+1] != ForestPanel.PEOPLETILE
+	        		) {	
+	        	rightd = Math.abs(peopley - y) + Math.abs(peoplex+1 - x);
+	        }
+	        
+	        // find nearest safe spot of all possible safe spots
+	        int mind = Collections.min(Arrays.asList(upd, downd, leftd, rightd));	        
+	       
+	        // up
+	        if (mind == upd && upd != peopled) {
+	        	newx = peoplex;
+	        	newy = peopley-1;
+	        	dir = "down";
+	        }
+	        // down
+	        else if (mind == downd && downd != peopled) {
+	        	newx = peoplex;
+	        	newy = peopley+1;
+	        	dir = "up";
+	        }
+	        // left
+	        else if (mind == leftd && leftd != peopled) {
+	        	newx = peoplex-1;
 	        	newy = peopley;
-	        	newx = peoplex - 1;
 	        	dir = "right";
+	        }
+	        // right
+	        else if (mind == rightd && rightd != peopled) {
+	        	newx = peoplex+1;
+	        	newy = peopley;
+	        	dir = "left";
 	        }
 	        else {
 	        	// verbose
@@ -410,21 +492,23 @@ public abstract class Firefighter {
 	        // place agent on the environment
 	        mforest[y][x] = ForestPanel.NORMALTILE;
 	        mforest[newy][newx] = ForestPanel.FIREFIGHTER;
-	        System.out.println("[" + agName + "] Cleaned (" + x + " " + y + ")["+mforest[y][x]+" and going to (" + newx + " " + newy +")["+mforest[newy][newx]+"]");
-	       
-	     			
-	     	// update agent beliefs
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
-	        forest.addPercept(agName, Literal.parseLiteral("pos(" + newx + ", " + newy + ")"));
-	        
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
-	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
-	        
 	        
 	        // verbose
 	        System.out.println("[" + agName + "] Nearest victim located at (" + peoplex + ", " + peopley + ").");
 	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
-
+	        System.out.println("[" + agName + "] Cleared (" + x + ", " + y + ")["+mforest[y][x]+"] and went to (" + newx + " " + newy +")["+mforest[newy][newx]+"]");
+	       	     			
+	     	// update agent beliefs
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
+	        forest.addPercept(agName, Literal.parseLiteral("pos(" + newx + ", " + newy + ")"));
+	        
+	        Thread.sleep(100);
+	        	        
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
+	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
+	        
+	        
+	       
 		}
 		catch (Exception e) {
 			e.printStackTrace();

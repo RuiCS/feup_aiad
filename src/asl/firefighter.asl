@@ -34,11 +34,11 @@
 +!extinguishFire : not extinguished(true) <-
 	?pos(X, Y);
 	goToNearestFire(X, Y);
-	?facing(NDir);
 	?pos(NX, NY);
+	?facing(NDir);	
 	extinguishFire(NDir, NX, NY);
-	?pos(PX, PY);
-	savePeople(NDir, PX, PY);
+	//?pos(PX, PY);
+	//savePeople(NDir, PX, PY);
 	!extinguishFire.
 
 // stop	
