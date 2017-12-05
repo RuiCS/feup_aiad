@@ -76,6 +76,7 @@ public abstract class Firefighter {
 		// place agent on the environment
 		forest.getForest()[y][x] = ForestPanel.FIREFIGHTER;
 		
+		
 		// update agent beliefs
 		forest.addPercept(agName, Literal.parseLiteral("pos(" + x + ", " + y + ")"));
 		try { Thread.sleep(100);} catch (Exception e) {}

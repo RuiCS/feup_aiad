@@ -19,8 +19,10 @@ public class Forest extends Environment {
     	new Thread() {
     		public void run() {
     			try {
-    				while (isRunning()) {
-    					gui.panel.spreadFire();
+    				while (isRunning()) {    			
+    					if (gui.panel != null) {
+        					gui.panel.spreadFire();
+    					}
     					Thread.sleep(1000);
     				}
     			} catch (Exception e) {}
@@ -33,7 +35,7 @@ public class Forest extends Environment {
     public boolean executeAction(String agName, Structure action) {
     	
     	// slow down the execution
-    	try { Thread.sleep(500);} catch (Exception e) {}
+    	try { Thread.sleep(10000);} catch (Exception e) {} //TODO sleep 500 e arranjar forma de ver se a floresta existe(?)
     	
     	return Firefighter.executeAction(this, agName, action);
     	
