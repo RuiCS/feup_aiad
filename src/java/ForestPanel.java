@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Random;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
 public class ForestPanel extends JPanel {
@@ -80,20 +81,25 @@ public class ForestPanel extends JPanel {
 	}
 	
 
+	public void defaultConfig() {
+		this.setPreferredSize(new Dimension(offset*2 + this.forest.length*(boxSpacing), offset*2 + this.forest.length*(boxSpacing)));
+		this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Simulator Window"));
+	}
+	
 	public ForestPanel(int posX, int posY, int windX, int windY, int[][]forest) {
 		this.windX = windX;
 		this.windY = windY;
 		// TODO change
 		this.forest = forest;
 		this.initialState = forest;
-		this.setPreferredSize(new Dimension(this.forest.length*15,this.forest.length*15));
+		this.defaultConfig();
 	}
 	
 	
 	public ForestPanel(String dummy) {
 		// TODO change
 		this.initRandomForest(40,40);
-		this.setPreferredSize(new Dimension(this.forest.length*15,this.forest.length*15));
+		this.defaultConfig();
 	}
 	
 	public int[][] addCluster(int[][] f, int clusterType, int tileType, int x, int y, int xSize, int ySize) {
