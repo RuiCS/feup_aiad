@@ -35,7 +35,7 @@ public class Forest extends Environment {
     public boolean executeAction(String agName, Structure action) {
     	
     	// slow down the execution
-    	try { Thread.sleep(10000);} catch (Exception e) {} //TODO sleep 500 e arranjar forma de ver se a floresta existe(?)
+    	try { Thread.sleep(500);} catch (Exception e) {} 
     	
     	return Firefighter.executeAction(this, agName, action);
     	
@@ -55,6 +55,7 @@ public class Forest extends Environment {
      * @return Matrix representing the current environment
      */
     public int[][] getForest() {
+    	if (gui.getForestPanel() == null) return null; 
     	return gui.getForestPanel().getForest();
     }    
     

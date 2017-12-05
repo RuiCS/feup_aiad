@@ -20,10 +20,12 @@
  * Add it to the environment (forest).
  * Agent wants to extinguish the fire.
  */
-+!start : true <-
-	init;
++!start : ready <-
 	!extinguishFire.
 
++!start : not ready <-
+	init;
+	!start.
 
 /**
  * Go to the nearest fire.

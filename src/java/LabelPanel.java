@@ -38,7 +38,7 @@ public class LabelPanel extends JPanel {
 		this.panel = panel;
 		this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderString));
 		this.setLayout(new GridBagLayout());
-		this.setPreferredSize(new Dimension(350, 400));
+		this.setPreferredSize(new Dimension(200, 400));
 		
 		windPanel = new JPanel(new GridBagLayout());
 		tilesPanel = new JPanel(new GridBagLayout());

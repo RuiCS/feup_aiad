@@ -13,20 +13,18 @@ public class ForestPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	// Tile translation
-	private final int normalTile = 0;
-	private final int denseTile = 1;
-	private final int concreteTile = 2;
-	private final int fireTile = 3;
 	private final int victimTile = 4;
 	private final int firefighterTile = 5;
 	private final int firefighterWithVictimTile = 6;
 	//TODO clean up
-	public static final int FIREFIGHTER = 5;
-	public static final int FIRETILE = 3;
 	public static final int NORMALTILE = 0;
+	public static final int DENSETILE = 1;
+	public static final int CONCRETETILE = 2;
+	public static final int FIRETILE = 3;
 	public static final int PEOPLETILE = 4;
-	public static final int WIDTH = 20; //TODO real values
-	public static final int HEIGHT = 20;
+	public static final int FIREFIGHTER = 5;
+	public static int WIDTH;
+	public static int HEIGHT;
 	
 	// important GUI constants
 	private int offset = 20;
@@ -48,7 +46,7 @@ public class ForestPanel extends JPanel {
 		int[][] temp = new int[xSize][ySize];
 		for (int i = 0; i < ySize; i++) {
 			for (int j = 0; j < xSize; j++) {
-				temp[i][j] = normalTile;
+				temp[i][j] = this.NORMALTILE;
 			}
 		}
 		
@@ -61,7 +59,7 @@ public class ForestPanel extends JPanel {
 			int yS = r.nextInt(10);
 			int tileType = r.nextInt(4);
 			
-			while(tileType == fireTile || tileType == normalTile) tileType = r.nextInt(3);
+			while(tileType == this.FIRETILE || tileType == this.NORMALTILE) tileType = r.nextInt(3);
 			
 			temp = this.addCluster(temp, clusterType, tileType, x, y, xS, yS);
 			
@@ -69,7 +67,7 @@ public class ForestPanel extends JPanel {
 			
 		int fires = r.nextInt(3)+1;
 		for (int i = 0; i < fires; i++) {
-			this.addCluster(temp, r.nextInt(2), fireTile, r.nextInt(temp.length), r.nextInt(temp[0].length), r.nextInt(3), r.nextInt(3));
+			this.addCluster(temp, r.nextInt(2), this.FIRETILE, r.nextInt(temp.length), r.nextInt(temp[0].length), r.nextInt(3), r.nextInt(3));
 		}
 		
 		int sign = r.nextBoolean() ? 1 : -1;
@@ -82,6 +80,8 @@ public class ForestPanel extends JPanel {
 	
 
 	public void defaultConfig() {
+		this.WIDTH = forest.length;
+		this.HEIGHT = forest[0].length;
 		this.setPreferredSize(new Dimension(offset*2 + this.forest.length*(boxSpacing), offset*2 + this.forest.length*(boxSpacing)));
 		this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Simulator Window"));
 	}
@@ -168,19 +168,19 @@ public class ForestPanel extends JPanel {
 		for (int i = 0; i < forest.length; i++) {
 			for(int j = 0; j < forest[i].length; j++) {
 				switch (forest[j][i]){
-					case(normalTile): { 
+					case(NORMALTILE): { 
 						g.setColor(Color.GREEN);
 						break; 
 					}
-					case(denseTile): {
+					case(DENSETILE): {
 						g.setColor(Color.getHSBColor((float)0.33,(float)1.0,(float)0.5));
 						break; 
 					}
-					case(concreteTile): {
+					case(CONCRETETILE): {
 						g.setColor(Color.GRAY);
 						break;
 					}
-					case(fireTile): { 
+					case(FIRETILE): { 
 						g.setColor(Color.RED);
 						break; 
 					}

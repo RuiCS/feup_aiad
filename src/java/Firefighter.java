@@ -66,24 +66,34 @@ public abstract class Firefighter {
 	 */
 	public static void init(Forest forest, String agName) {
 		
-		// TODO proper initial position
+		if (forest.getForest() == null) {
+			System.out.println("[" + agName + "] - Not ready yet");
+		}
+		else {
+			forest.addPercept(agName, Literal.parseLiteral("ready"));
+			System.out.println("[" + agName + "] - Ready for action ");
+		}
 		
-		// initial position and direction
-		int x = ThreadLocalRandom.current().nextInt(0, ForestPanel.WIDTH);
-		int y = ThreadLocalRandom.current().nextInt(0, ForestPanel.HEIGHT);;
-		String dir = "down";
-		
-		// place agent on the environment
-		forest.getForest()[y][x] = ForestPanel.FIREFIGHTER;
-		
-		
-		// update agent beliefs
-		forest.addPercept(agName, Literal.parseLiteral("pos(" + x + ", " + y + ")"));
-		try { Thread.sleep(100);} catch (Exception e) {}
-		forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
-		
-		// verbose
-		System.out.println("[" + agName + "] Initializing at (" + x + ", " + y + "). Facing '" + dir + "'.");
+		if (forest.getForest() != null) {
+			// TODO proper initial position
+			
+			// initial position and direction
+			int x = ThreadLocalRandom.current().nextInt(0, ForestPanel.WIDTH);
+			int y = ThreadLocalRandom.current().nextInt(0, ForestPanel.HEIGHT);;
+			String dir = "down";
+			
+			// place agent on the environment
+			forest.getForest()[y][x] = ForestPanel.FIREFIGHTER;
+			
+			
+			// update agent beliefs
+			forest.addPercept(agName, Literal.parseLiteral("pos(" + x + ", " + y + ")"));
+			try { Thread.sleep(100);} catch (Exception e) {}
+			forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
+			
+			// verbose
+			System.out.println("[" + agName + "] Initializing at (" + x + ", " + y + "). Facing '" + dir + "'.");
+		}
 	}
 	
 	
@@ -115,7 +125,7 @@ public abstract class Firefighter {
 	        for (int i = 0; i < ForestPanel.HEIGHT; i++) {
 	        	
 	        	for (int j = 0; j < ForestPanel.WIDTH; j++) {
-	        		
+	        			        		
 	        		// if its fire, check its distance to agent
 	        		if (mforest[i][j] == ForestPanel.FIRETILE) {
 	        			
