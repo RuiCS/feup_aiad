@@ -41,9 +41,6 @@ public class ForestPanel extends JPanel {
 	private int windX;
 	private int windY;
 	
-	// array for storing firefighters and their information
-	private ArrayList<Firefighter2> firefighters;
-	
 	public void initRandomForest(int xSize, int ySize) {
 
 		Random r = new Random();
@@ -82,41 +79,6 @@ public class ForestPanel extends JPanel {
 		initialState=forest;
 	}
 	
-	/*public void initForest(int a, int b) {
-		int[][] temp = {
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,1,0},
-				{0,0,0,3,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0},
-				{0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,3,3,3,0,0,0,0,2,2,2,0,0},
-				{0,0,0,0,0,0,0,0,0,3,0,0,0,0,2,2,2,2,2,0},
-				{0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0},
-				{0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,1,1,1,1,1,1,0,0,0,2,2,2,0,0,0,0,0,0},
-				{0,0,0,0,1,1,1,1,0,2,2,2,2,2,0,0,0,0,1,1},
-				{0,0,0,0,0,1,0,0,0,2,2,2,2,2,0,0,0,1,1,1},
-				{0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,1,0},
-		};
-		windX = -30;
-		windY = -30;
-		forest=temp;
-		initialState=forest;
-	}*/
-	
-	public ForestPanel () {			
-		/*this.initForest(40,40);
-		this.initFirefighters(3);
-		this.setPreferredSize(new Dimension(this.forest.length*15,this.forest.length*15));*/
-	}
-	
 
 	public ForestPanel(int posX, int posY, int windX, int windY, int[][]forest) {
 		this.windX = windX;
@@ -124,8 +86,6 @@ public class ForestPanel extends JPanel {
 		// TODO change
 		this.forest = forest;
 		this.initialState = forest;
-
-		this.initFirefighters(5);
 		this.setPreferredSize(new Dimension(this.forest.length*15,this.forest.length*15));
 	}
 	
@@ -133,22 +93,7 @@ public class ForestPanel extends JPanel {
 	public ForestPanel(String dummy) {
 		// TODO change
 		this.initRandomForest(40,40);
-		this.initFirefighters(5);
 		this.setPreferredSize(new Dimension(this.forest.length*15,this.forest.length*15));
-	}
-	
-	
-	public void initFirefighters(int num) {
-		this.firefighters = new ArrayList<Firefighter2>();
-		while (num > 0) {
-			// TODO
-			this.addFirefighter(5, 5);
-			num--;
-		}
-	}
-	
-	public void addFirefighter(int x, int y) {
-		this.firefighters.add(new Firefighter2(x,y,forest.length, forest[0].length));
 	}
 	
 	public int[][] addCluster(int[][] f, int clusterType, int tileType, int x, int y, int xSize, int ySize) {
@@ -244,10 +189,6 @@ public class ForestPanel extends JPanel {
 					default: break;
 				}
 				
-				for (Firefighter2 f : this.firefighters) {
-					if (f.x == i && f.y == j) g.setColor(Color.BLUE);
-				}
-				
 				g.drawRect(offset+boxSpacing*i,offset+boxSpacing*j,boxWidth,boxWidth);
 				g.fillRect(offset+boxSpacing*i,offset+boxSpacing*j,boxWidth,boxWidth);
 				repaint();
@@ -263,4 +204,14 @@ public class ForestPanel extends JPanel {
 	public int[][] getForest() {
 		return forest;
 	}
+	
+
+	public int getWindX() {
+		return windX;
+	}
+	
+	public int getWindY() {
+		return windY;
+	}
+	
 }

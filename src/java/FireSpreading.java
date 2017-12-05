@@ -28,7 +28,7 @@ public class FireSpreading {
 					if (downOfFire(forest,i,j) && windY > 0) windStrengthY = Math.abs(windY);
 					
 					int probability = 0;
-					probability = 100 - (int)(0.5 * (windStrengthX+windStrengthY));
+					probability = 100 - (int)(0.7 * (windStrengthX+windStrengthY));
 					
 					if (probability <= 1) probability = 1;
 					
@@ -73,14 +73,14 @@ public class FireSpreading {
 	}
 	
 	
-	public static boolean rightOfFire(int [][] forest, int i, int j) {
+	public static boolean leftOfFire(int [][] forest, int i, int j) {
 		int upperBoundX;
 		if (i+1 >= forest.length) upperBoundX = i; else upperBoundX = i+1;
 		if (forest[upperBoundX][j] == fireTile) return true;
 		return false;
 	}
 	
-	public static boolean upOfFire(int [][] forest, int i, int j) {
+	public static boolean downOfFire(int [][] forest, int i, int j) {
 		int lowerBoundY;
 		if (j-1 <= 0) lowerBoundY = j; else lowerBoundY = j-1;
 		if (forest[i][lowerBoundY] == fireTile) return true;
@@ -88,14 +88,14 @@ public class FireSpreading {
 		
 	}
 	
-	public static boolean leftOfFire(int [][] forest, int i, int j) {
+	public static boolean rightOfFire(int [][] forest, int i, int j) {
 		int lowerBoundX;
 		if (i-1 <= 0) lowerBoundX = i; else lowerBoundX = i-1;
 		if (forest[lowerBoundX][j] == fireTile) return true;
 		return false;
 	}
 	
-	public static boolean downOfFire(int [][] forest, int i, int j) {
+	public static boolean upOfFire(int [][] forest, int i, int j) {
 		int upperBoundY;
 		if (j+1 >= forest[i].length) upperBoundY = j; else upperBoundY = j+1;
 		if (forest[i][upperBoundY] == fireTile) return true;

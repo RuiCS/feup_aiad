@@ -23,6 +23,9 @@ public class ForestGUI extends JFrame {
 	private static final long serialVersionUID = 1L;
 	public ForestPanel panel;
 	public OptionsPanel options;
+	public JPanel casing;
+	public LabelPanel labels;	
+	
 	// 0 - none; 1 - random; 2 - file
 	public int state;
 	
@@ -87,12 +90,17 @@ public class ForestGUI extends JFrame {
 	}
 	
 	public ForestGUI() {
+		
+		casing = new JPanel();
 		options = new OptionsPanel();
 		options.randomBtn.addActionListener(new ActionListener() { 
 		  public void actionPerformed(ActionEvent e) { 
 			state = 1;
 		    panel = new ForestPanel("");
-			setContentPane(panel);
+		    casing.add(panel);
+		    labels = new LabelPanel(panel);
+		    casing.add(labels);
+			setContentPane(casing);
 			pack();
 		  } 
 		} );
@@ -146,7 +154,10 @@ public class ForestGUI extends JFrame {
 				}
 				state = 1;
 			    panel = new ForestPanel(posX, posY, windX, windY, forest);
-				setContentPane(panel);
+			    casing.add(panel);
+			    labels = new LabelPanel(panel);
+			    casing.add(labels);
+				setContentPane(casing);
 				pack();
 			}
 		  } 
