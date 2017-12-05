@@ -146,29 +146,37 @@ public abstract class Firefighter {
 	        // new agent pos and direction
 	        int newx = 0;
 	        int newy = 0;
-	        String dir = "";
+	        String dir = "up"; //agent must face somewhere
 	        
 	        // find safe spot near the nearest fire
 	        // down
-	        if (firey+1 < ForestPanel.HEIGHT && mforest[firey+1][firex] != ForestPanel.FIRETILE) {	
+	        if (firey+1 < ForestPanel.HEIGHT && mforest[firey+1][firex] != ForestPanel.FIRETILE
+	        		&& mforest[firey+1][firex] != ForestPanel.FIREFIGHTER
+	        		 && mforest[firey+1][firex] != ForestPanel.PEOPLETILE) {	
 	        	newy = firey + 1;
 	        	newx = firex;
 	        	dir = "up";
 	        }
 	        // right
-	        else if (firex+1 < ForestPanel.WIDTH && mforest[firey][firex+1] != ForestPanel.FIRETILE) {	
+	        else if (firex+1 < ForestPanel.WIDTH && mforest[firey][firex+1] != ForestPanel.FIRETILE 
+	        		&& mforest[firey][firex+1] != ForestPanel.FIREFIGHTER
+	        		&& mforest[firey][firex+1] != ForestPanel.PEOPLETILE) {	
 	        	newy = firey;
 	        	newx = firex + 1;
 	        	dir = "left";
 	        }
 	        // up
-	        else if (firey-1 > 0 && mforest[firey-1][firex] != ForestPanel.FIRETILE) {	
+	        else if (firey-1 > 0 && mforest[firey-1][firex] != ForestPanel.FIRETILE 
+	        		&& mforest[firey-1][firex] != ForestPanel.FIREFIGHTER
+	        		&& mforest[firey-1][firex] != ForestPanel.PEOPLETILE) {	
 	        	newy = firey - 1;
 	        	newx = firex;
 	        	dir = "down";
 	        }
 	        // left
-	        else if (firex-1 > 0 && mforest[firey][firex-1] != ForestPanel.FIRETILE) {	
+	        else if (firex-1 > 0 && mforest[firey][firex-1] != ForestPanel.FIRETILE 
+	        		&& mforest[firey][firex-1] != ForestPanel.FIREFIGHTER
+	        		&& mforest[firey][firex-1] != ForestPanel.PEOPLETILE) {	
 	        	newy = firey;
 	        	newx = firex - 1;
 	        	dir = "right";
@@ -179,7 +187,10 @@ public abstract class Firefighter {
 	        }
 	        
 	        // place agent on the environment
+	        mforest[y][x] = ForestPanel.NORMALTILE;
 	        mforest[newy][newx] = ForestPanel.FIREFIGHTER;
+	        System.out.println("[" + agName + "] Cleaned (" + x + " " + y + ")[" + mforest[y][x] + "] and going to (" + newx + " " + newy + ")[" + mforest[newy][newx] +"]");
+	        
 	     			
 	     	// update agent beliefs
 	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
@@ -234,7 +245,7 @@ public abstract class Firefighter {
 	        switch (dir) {
 	        
 				case "up":
-					mforest[y-1][x] = ForestPanel.NORMALTILE;
+					mforest[y-1][x] = ForestPanel.NORMALTILE; //TODO: isto deu outofbounds exception
 					
 					// verbose
 					firex = x;
@@ -302,9 +313,8 @@ public abstract class Firefighter {
 	        }
 			
 			// get current pos
-
 			int x = (int)((NumberTerm)action.getTerm(1)).solve();
-	        int y = (int)((NumberTerm)action.getTerm(1)).solve();
+	        int y = (int)((NumberTerm)action.getTerm(2)).solve();
 	        
 	        
 	        // get forest matrix
@@ -357,29 +367,37 @@ public abstract class Firefighter {
 	        // new agent pos and direction
 	        int newx = 0;
 	        int newy = 0;
-	        String dir = "";
+	        String dir = "up"; //agent must face somewhere
 	        
 	        // find safe spot near the nearest victim
 	        // down
-	        if (peopley+1 < ForestPanel.HEIGHT && mforest[peopley+1][peoplex] != ForestPanel.PEOPLETILE) {	
+	        if (peopley+1 < ForestPanel.HEIGHT 
+	        		&& mforest[peopley+1][peoplex] != ForestPanel.PEOPLETILE 
+	        		&& mforest[peopley+1][peoplex] != ForestPanel.FIREFIGHTER) {	
 	        	newy = peopley + 1;
 	        	newx = peoplex;
 	        	dir = "up";
 	        }
 	        // right
-	        else if (peoplex+1 < ForestPanel.WIDTH && mforest[peopley][peoplex+1] != ForestPanel.PEOPLETILE) {	
+	        else if (peoplex+1 < ForestPanel.WIDTH 
+	        		&& mforest[peopley][peoplex+1] != ForestPanel.PEOPLETILE 
+	        		&& mforest[peopley][peoplex+1] != ForestPanel.FIREFIGHTER) {	
 	        	newy = peopley;
 	        	newx = peoplex + 1;
 	        	dir = "left";
 	        }
 	        // up
-	        else if (peopley-1 > 0 && mforest[peopley-1][peoplex] != ForestPanel.PEOPLETILE) {	
+	        else if (peopley-1 > 0 
+	        		&& mforest[peopley-1][peoplex] != ForestPanel.PEOPLETILE 
+	        		&& mforest[peopley-1][peoplex] != ForestPanel.FIREFIGHTER) {	
 	        	newy = peopley - 1;
 	        	newx = peoplex;
 	        	dir = "down";
 	        }
 	        // left
-	        else if (peoplex-1 > 0 && mforest[peopley][peoplex-1] != ForestPanel.PEOPLETILE) {	
+	        else if (peoplex-1 > 0 
+	        		&& mforest[peopley][peoplex-1] != ForestPanel.PEOPLETILE 
+	        		&& mforest[peopley][peoplex-1] != ForestPanel.FIREFIGHTER) {	
 	        	newy = peopley;
 	        	newx = peoplex - 1;
 	        	dir = "right";
@@ -390,7 +408,10 @@ public abstract class Firefighter {
 	        }
 	        
 	        // place agent on the environment
+	        mforest[y][x] = ForestPanel.NORMALTILE;
 	        mforest[newy][newx] = ForestPanel.FIREFIGHTER;
+	        System.out.println("[" + agName + "] Cleaned (" + x + " " + y + ")["+mforest[y][x]+" and going to (" + newx + " " + newy +")["+mforest[newy][newx]+"]");
+	       
 	     			
 	     	// update agent beliefs
 	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
@@ -430,7 +451,14 @@ public abstract class Firefighter {
         		(y+2 < ForestPanel.HEIGHT && mforest[y+1][x] == ForestPanel.FIRETILE) ||
         		(x+2 < ForestPanel.WIDTH && mforest[y][x+1] == ForestPanel.FIRETILE) ||
         		(y-2 > 0 && mforest[y-1][x] == ForestPanel.FIRETILE) ||
-        		(x-2 > 0 && mforest[y][x-1] == ForestPanel.FIRETILE)) {	
+        		(x-2 > 0 && mforest[y][x-1] == ForestPanel.FIRETILE) ||
+        		
+        		(y+3 < ForestPanel.HEIGHT && mforest[y+1][x] == ForestPanel.FIRETILE) ||
+        		(x+3 < ForestPanel.WIDTH && mforest[y][x+1] == ForestPanel.FIRETILE) ||
+        		(y-3 > 0 && mforest[y-1][x] == ForestPanel.FIRETILE) ||
+        		(x-3 > 0 && mforest[y][x-1] == ForestPanel.FIRETILE))
+        
+        {	
         	return true;
         }
         else {
