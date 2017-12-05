@@ -19,6 +19,7 @@ public class ForestPanel extends JPanel {
 	public static final int FIREFIGHTER = 4;
 	public static final int FIRETILE = 3;
 	public static final int NORMALTILE = 0;
+	public static final int PEOPLETILE = 5;
 	
 	private int offset = 20;
 	private int boxWidth = 10;
@@ -56,7 +57,7 @@ public class ForestPanel extends JPanel {
 				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 				{0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0},
 				{0,0,0,0,0,0,0,0,3,3,3,0,0,0,0,2,2,2,0,0},
-				{0,0,0,0,0,0,0,0,0,3,0,0,0,0,2,2,2,2,2,0},
+				{0,0,0,0,0,0,0,0,0,3,0,0,5,0,2,2,2,2,2,0},
 				{0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0},
 				{0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 				{0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -190,6 +191,10 @@ public class ForestPanel extends JPanel {
 					}
 					case(FIREFIGHTER): { 
 						g.setColor(Color.ORANGE);
+						break; 
+					}
+					case(PEOPLETILE): { 
+						g.setColor(Color.BLUE);
 						break; 
 					}
 					default: break;

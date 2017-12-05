@@ -41,6 +41,10 @@ public abstract class Firefighter {
 			case "extinguishFire":
 				extinguishFire(forest, agName, action);
 				break;
+			
+			case "savePeople":
+				savePeople(forest, agName, action);
+				break;
 				
 			default:
 				System.out.println("[" + agName +"] Action ' " + action + "', not implemented!");
@@ -277,4 +281,161 @@ public abstract class Firefighter {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Find people in danger and move them away from fire
+	 * 
+	 * @param forest Current environment
+	 * @param agName Name of the agent
+	 * @param action Action requested by the agent
+	 */
+	public static void savePeople(Forest forest, String agName, Structure action) {
+		
+		try {
+			
+			if (forest.containsPercept(agName, Literal.parseLiteral("extinguished(true)"))) {
+	        	
+		        // verbose
+		        System.out.println("[" + agName + "] All the fires have been extinguished so there's no-one to save");
+		        
+	        	return;
+	        }
+			
+			// get current pos
+
+			int x = (int)((NumberTerm)action.getTerm(1)).solve();
+	        int y = (int)((NumberTerm)action.getTerm(1)).solve();
+	        
+	        
+	        // get forest matrix
+	        int[][] mforest = forest.getForest();
+	        
+	        // distance to nearest person
+	        int peopled = ForestPanel.WIDTH + ForestPanel.HEIGHT;
+	        
+	        // nearest person position
+	        int peoplex = ForestPanel.WIDTH;
+	        int peopley = ForestPanel.HEIGHT;
+	        
+	        // find nearest person
+	        for (int i = 0; i < ForestPanel.HEIGHT; i++) {
+	        	
+	        	for (int j = 0; j < ForestPanel.WIDTH; j++) {
+	        		
+	        		// if it's a person, check if it's a victim (fire is close) 
+	        		if (mforest[i][j] == ForestPanel.PEOPLETILE) {
+	        			
+	        			boolean isVictim = lookAroundPerson(forest, j, i);
+	        			
+	        			// if it's a victim, check distance to agent (it goes to the closer one)
+	        			if(isVictim) {
+		        			int dx = Math.abs(i - y);
+		        			int dy = Math.abs(j - x);
+		        			
+		        			// found closer victim
+		        			if (dx + dy < peopled) {
+			        			
+			        			peoplex = j;
+			        			peopley = i;
+			        			peopled = dx + dy;
+	        			}
+	        			}
+
+	        		}
+	        	}
+	        }
+	        
+	        // if there are no victims
+	        if (peoplex == ForestPanel.WIDTH && peopley == ForestPanel.HEIGHT) {
+	        			        
+		        // verbose
+		        System.out.println("[" + agName + "] No victims right now");
+		        
+		        return;
+	        }
+	        
+	        // new agent pos and direction
+	        int newx = 0;
+	        int newy = 0;
+	        String dir = "";
+	        
+	        // find safe spot near the nearest victim
+	        // down
+	        if (peopley+1 < ForestPanel.HEIGHT && mforest[peopley+1][peoplex] != ForestPanel.PEOPLETILE) {	
+	        	newy = peopley + 1;
+	        	newx = peoplex;
+	        	dir = "up";
+	        }
+	        // right
+	        else if (peoplex+1 < ForestPanel.WIDTH && mforest[peopley][peoplex+1] != ForestPanel.PEOPLETILE) {	
+	        	newy = peopley;
+	        	newx = peoplex + 1;
+	        	dir = "left";
+	        }
+	        // up
+	        else if (peopley-1 > 0 && mforest[peopley-1][peoplex] != ForestPanel.PEOPLETILE) {	
+	        	newy = peopley - 1;
+	        	newx = peoplex;
+	        	dir = "down";
+	        }
+	        // left
+	        else if (peoplex-1 > 0 && mforest[peopley][peoplex-1] != ForestPanel.PEOPLETILE) {	
+	        	newy = peopley;
+	        	newx = peoplex - 1;
+	        	dir = "right";
+	        }
+	        else {
+	        	// verbose
+		        System.out.println("[" + agName + "] There is no safe spot around the victim located at (" + peoplex + ", " + peopley + ")!");
+	        }
+	        
+	        // place agent on the environment
+	        mforest[newy][newx] = ForestPanel.FIREFIGHTER;
+	     			
+	     	// update agent beliefs
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
+	        forest.addPercept(agName, Literal.parseLiteral("pos(" + newx + ", " + newy + ")"));
+	        
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
+	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
+	        
+	        
+	        // verbose
+	        System.out.println("[" + agName + "] Nearest victim located at (" + peoplex + ", " + peopley + ").");
+	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
+
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Determine if person is victim (if there's a fire close by)
+	 * 
+	 * @param forest Current environment
+	 * @param int x person x position
+	 * @param int y person y position
+	 */
+	public static boolean lookAroundPerson(Forest forest, int x, int y) {
+		
+		int[][] mforest = forest.getForest();
+		
+		// person is in danger if fire is closer than 2 cells
+        if ((y+1 < ForestPanel.HEIGHT && mforest[y+1][x] == ForestPanel.FIRETILE) ||
+        		(x+1 < ForestPanel.WIDTH && mforest[y][x+1] == ForestPanel.FIRETILE) ||
+        		(y-1 > 0 && mforest[y-1][x] == ForestPanel.FIRETILE) ||
+        		(x-1 > 0 && mforest[y][x-1] == ForestPanel.FIRETILE) ||
+        		
+        		(y+2 < ForestPanel.HEIGHT && mforest[y+1][x] == ForestPanel.FIRETILE) ||
+        		(x+2 < ForestPanel.WIDTH && mforest[y][x+1] == ForestPanel.FIRETILE) ||
+        		(y-2 > 0 && mforest[y-1][x] == ForestPanel.FIRETILE) ||
+        		(x-2 > 0 && mforest[y][x-1] == ForestPanel.FIRETILE)) {	
+        	return true;
+        }
+        else {
+        	return false;
+        }
+	}
+	
 }

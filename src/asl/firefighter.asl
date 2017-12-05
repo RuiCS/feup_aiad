@@ -37,6 +37,8 @@
 	?facing(NDir);
 	?pos(NX, NY);
 	extinguishFire(NDir, NX, NY);
+	?pos(PX, PY);
+	savePeople(NDir, PX, PY);
 	!extinguishFire.
 
 // stop	
