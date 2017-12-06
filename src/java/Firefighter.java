@@ -40,12 +40,16 @@ public abstract class Firefighter {
 				goToNearestFire(forest, agName, action);
 				break;
 				
-			case "extinguishFire":
+			case "extinguishFire":		        
 				extinguishFire(forest, agName, action);
 				break;
 			
 			case "savePeople":
 				savePeople(forest, agName, action);
+				break;
+				
+			case "move":
+				move(forest, agName, action);
 				break;
 				
 			default:
@@ -78,8 +82,10 @@ public abstract class Firefighter {
 			// TODO proper initial position
 			
 			// initial position and direction
-			int x = ThreadLocalRandom.current().nextInt(0, ForestPanel.WIDTH);
-			int y = ThreadLocalRandom.current().nextInt(0, ForestPanel.HEIGHT);;
+			//int x = ThreadLocalRandom.current().nextInt(0, ForestPanel.WIDTH);
+			//int y = ThreadLocalRandom.current().nextInt(0, ForestPanel.HEIGHT);
+			int x = 0;
+			int y = 0;
 			String dir = "down";
 			
 			// place agent on the environment
@@ -238,26 +244,20 @@ public abstract class Firefighter {
 		        System.out.println("[" + agName + "] There is no safe spot around the fire located at (" + firex + ", " + firey + ")!");
 	        }
 	        
-	        // place agent on the environment
-	        mforest[y][x] = ForestPanel.NORMALTILE;
-	        mforest[newy][newx] = ForestPanel.FIREFIGHTER;
-	        
 	        // verbose
 	        System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
 	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
-	        System.out.println("[" + agName + "] Cleared (" + x + ", " + y + ")[" + mforest[y][x] + "] and went to (" + newx + " " + newy + ")[" + mforest[newy][newx] +"]");
-	        
 	     			
 	     	// update agent beliefs
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
-	        forest.addPercept(agName, Literal.parseLiteral("pos(" + newx + ", " + newy + ")"));
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("move(X, Y)"));
+	        forest.addPercept(agName, Literal.parseLiteral("move(" + newx + ", " + newy + ")"));
 	        
 	        Thread.sleep(100);
 	        
 	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
 	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
 	        
-	        
+	        System.out.println(forest.consultPercepts(agName).size());
 	       
 		}
 		catch (Exception e) {
@@ -276,6 +276,7 @@ public abstract class Firefighter {
 	public static void extinguishFire(Forest forest, String agName, Structure action) {
 		
 		try {	        
+			System.out.println(1);
 			// get current pos and direction
 			String dir = ((Atom)action.getTerm(0)).toString();
 			int x = (int)((NumberTerm)action.getTerm(1)).solve();
@@ -296,6 +297,8 @@ public abstract class Firefighter {
 		        
 	        	return;
 	        }
+	        
+	        System.out.println(2);
 	        
 	        switch (dir) {
 	        
@@ -338,6 +341,9 @@ public abstract class Firefighter {
 				default:
 					break;
 			}
+	        
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("ready(extinguish)"));
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("move(X, Y)"));
 	        
 	        // verbose
 	        System.out.println("[" + agName + "] Extinguished fire at (" + firex + ", " + firey + ").");
@@ -561,4 +567,88 @@ public abstract class Firefighter {
         }
 	}
 	
+	
+	/**
+	 * Moves the agent one cell towards the given position
+	 * 
+	 * @param forest Current environment
+	 * @param agName Name of the agent
+	 * @param action Action requested by the agent
+	 */
+	public static void move(Forest forest, String agName, Structure action) {
+		
+		try {	        
+			// get current pos and goal pos
+			int x = (int)((NumberTerm)action.getTerm(0)).solve();
+	        int y = (int)((NumberTerm)action.getTerm(1)).solve();
+			int gx = (int)((NumberTerm)action.getTerm(2)).solve();
+	        int gy = (int)((NumberTerm)action.getTerm(3)).solve();
+	        
+	        // get forest matrix
+	        int[][] mforest = forest.getForest();
+	        
+	        int offset = 0;
+	        
+	        // new pos
+	        int nx = x;
+	        int ny = y;
+	        
+	        // delta
+	        int dx = gx - x;
+	        int dy = gy - y;
+	        
+	        // goal pos is not in same row and not in same col as pos
+	        if (dx != 0 && dy != 0) {
+	        	
+	        	// randomly choose whether to move up/down or left/right
+	        	int rand = ThreadLocalRandom.current().nextInt(0, 2);
+	        	
+	        	// move vertically
+	        	if (rand == 0) {
+	        		offset = (dy > 0)? 1 : -1;
+	        		ny = ny + offset;
+	        	}
+	        	// move horizontaly
+	        	else {
+	        		offset = (dx > 0)? 1 : -1;
+	        		nx = nx + offset;
+	        	}
+	        }
+	        // goal pos in same col as pos
+	        else if (dx == 0 && dy != 0) {
+	        	
+	        	offset = (dy > 0)? 1 : -1;
+        		ny = ny + offset;	        	
+	        }
+	        // goal pos in same row as pos
+	        else if (dx != 0 && dy == 0) {
+	        	
+	        	offset = (dx > 0)? 1 : -1;
+        		nx = nx + offset;	        	
+	        }
+	        
+	        // place agent on the environment
+	        mforest[y][x] = ForestPanel.NORMALTILE; // TODO
+	        mforest[ny][nx] = ForestPanel.FIREFIGHTER;
+	        
+	        // verbose
+	        System.out.println("[" + agName + "] Moved from pos("+x+", "+y+") to pos("+nx+", "+ny+").");
+	     			
+	     	// update agent beliefs
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
+	        forest.addPercept(agName, Literal.parseLiteral("pos(" + nx + ", " + ny + ")"));
+	        
+	        // agent is already at goal position
+	        if (nx == gx && ny == gy) {	        	
+	        	System.out.println("[" + agName + "] I'm where I want to be!");
+	        	forest.removePerceptsByUnif(agName, Literal.parseLiteral("move(X, Y)"));
+	        	forest.addPercept(agName, Literal.parseLiteral("ready(extinguish)"));
+	        	return;
+	        	
+	        }
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}	
 }

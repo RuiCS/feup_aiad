@@ -21,7 +21,7 @@ public class Forest extends Environment {
     			try {
     				while (isRunning()) {    			
     					if (gui.panel != null) {
-        					gui.panel.spreadFire();
+        					//gui.panel.spreadFire();
     					}
     					Thread.sleep(1000);
     				}
