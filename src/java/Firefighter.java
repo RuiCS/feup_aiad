@@ -40,6 +40,10 @@ public abstract class Firefighter {
 				goToNearestFire(forest, agName, action);
 				break;
 				
+			case "checkForFire":
+				checkForFire(forest, agName, action);
+				break;
+			
 			case "extinguishFire":
 				extinguishFire(forest, agName, action);
 				break;
@@ -107,6 +111,36 @@ public abstract class Firefighter {
 	public static void goToNearestFire(Forest forest, String agName, Structure action) {
 		
 		try {
+
+	        // get forest matrix
+	        int[][] mforest = forest.getForest();
+	        
+
+			// get current pos
+			int x = (int)((NumberTerm)action.getTerm(0)).solve();
+	        int y = (int)((NumberTerm)action.getTerm(1)).solve();
+			String dir = ((Atom)action.getTerm(2)).toString();
+			int newx = (int)((NumberTerm)action.getTerm(3)).solve();
+	        int newy = (int)((NumberTerm)action.getTerm(4)).solve();	
+	        
+	        // place agent on the environment
+	        mforest[y][x] = ForestPanel.NORMALTILE;
+	        System.out.println("[" + agName + "] Cleared (" + x + ", " + y + ")[" + mforest[y][x] + "] and went to (" + newx + " " + newy + ")[" + mforest[newy][newx] +"]");
+	        
+	        mforest[newy][newx] = ForestPanel.FIREFIGHTER;
+	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
+	        
+        	forest.removePerceptsByUnif(agName, Literal.parseLiteral("going(NX,NY,FX,FY)"));
+	        
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void checkForFire(Forest forest, String agName, Structure action) {
+		try {
+			
 			// get current pos
 			int x = (int)((NumberTerm)action.getTerm(0)).solve();
 	        int y = (int)((NumberTerm)action.getTerm(1)).solve();
@@ -139,7 +173,7 @@ public abstract class Firefighter {
 		        			firey = i;
 		        			fired = dx + dy;
 	        			}
-
+	
 	        		}
 	        	}
 	        }
@@ -237,18 +271,16 @@ public abstract class Firefighter {
 	        	// verbose
 		        System.out.println("[" + agName + "] There is no safe spot around the fire located at (" + firex + ", " + firey + ")!");
 	        }
-	        
-	        // place agent on the environment
-	        mforest[y][x] = ForestPanel.NORMALTILE;
-	        mforest[newy][newx] = ForestPanel.FIREFIGHTER;
-	        
-	        // verbose
+				        
+	
 	        System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
-	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
-	        System.out.println("[" + agName + "] Cleared (" + x + ", " + y + ")[" + mforest[y][x] + "] and went to (" + newx + " " + newy + ")[" + mforest[newy][newx] +"]");
 	        
-	     			
 	     	// update agent beliefs
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("fireAt(X, Y)"));
+	        forest.addPercept(agName, Literal.parseLiteral("fireAt("+firey+","+firex+")"));
+	        
+	        Thread.sleep(100);
+	        
 	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
 	        forest.addPercept(agName, Literal.parseLiteral("pos(" + newx + ", " + newy + ")"));
 	        
@@ -257,12 +289,12 @@ public abstract class Firefighter {
 	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
 	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
 	        
+	        Thread.sleep(100);
 	        
-	       
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+        
 	}
 	
 	
@@ -341,6 +373,7 @@ public abstract class Firefighter {
 	        
 	        // verbose
 	        System.out.println("[" + agName + "] Extinguished fire at (" + firex + ", " + firey + ").");
+	       	        
 	        
 		}
 		catch (Exception e) {

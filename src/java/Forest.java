@@ -19,7 +19,7 @@ public class Forest extends Environment {
     	new Thread() {
     		public void run() {
     			try {
-    				while (isRunning()) {    			
+    				while (isRunning()) {
     					if (gui.panel != null) {
         					gui.panel.spreadFire();
     					}
