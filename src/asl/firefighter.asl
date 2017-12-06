@@ -1,3 +1,5 @@
+// TODO limpar moving!
+
 /**
  * This file implements the firefigher agent
  */
@@ -5,13 +7,24 @@
 /* --- Possible beliefs / perceptions --- */
 
 // pos(X, Y)  			the current position of the agent
-// move(X, Y)			where the agent wants to go
+// goal(X, Y)			where the agent wants to go
 // facing(Dir) 			direction the agent is facing. Can only extinguish fires in that direction
-// extinguished(true) 	when all the fires have been extinguished
+// extinguished 		when all the fires have been extinguished
+// ready				when txt file of environment has been fully loaded
+// moving(X, Y)			currently moving towards (X, Y)
+
 
 /* --- Initial goals --- */
 
-!start.					// i want to start thinking
+!start.
+
+
+/* --- Possible goals --- */
+
+// !start				start the agent
+// !scan				scan the environment, looking for nearest fire and updating goal(GX, GY)
+// !pos					go from pos(X, Y) to goal(X, Y), one cell at a time
+// !extinguishFire		extinguish fire in nearby, in the direction the agent is currently facing
 
 
 /* --- Plans --- */
@@ -19,45 +32,77 @@
 /**
  * Start the agent.
  * Add it to the environment (forest).
- * Agent wants to extinguish the fire.
+ * Start scanning the environment.
  */
+ 
 +!start : ready <-
-	!extinguishFire.
+	!scan.
 
 +!start : not ready <-
 	init;
 	!start.
 
+
+
+@findNearestFire[atomic]
++!findNearestFire : true <-
+	findNearestFire.
+
+@move[atomic]
++!move : true <-
+	move.
+
+@extinguishFire[atomic]	
++!extinguishFire : true <-
+	extinguishFire.
+
 /**
- * Go to the nearest fire.
- * Extinguish that fire.
- * Repeat.
+ * Constantly scan the environment
+ * looking for nearest fire and
+ * updating goal(X, Y)
  */
- // main
-+!extinguishFire : not extinguished(true) & not ready(extinguish)<-
-	?pos(X, Y);
-	goToNearestFire(X, Y);
-	!extinguishFire.
+ 
++!scan : not extinguished <-
+	!findNearestFire;
+	!scan.
 
--!extinguishFire : not extinguished(true) <- !extinguishFire.
-// stop	
--!extinguishFire : extinguished(true) <- true.
++!scan : extinguished <-
+	.print("Scanning stopped, there are no more fires!").
 
 
 /**
- * Move towards the given position,
+ * When nearest fire has been found
+ * add goal to move towards it
+ */
+ 
++goal(X, Y) : not moving(X, Y) <-
+	!pos(X, Y).
+	
++goal(X, Y) : moving(X, Y) <- .print("Already moving to requested spot!").
+
+
+/**
+ * Move towards the goal position,
  * one cell at a time
  */
- +move(GX, GY) : not ready(extinguish) <-
- 	?pos(X, Y);
- 	move(X, Y, GX, GY).
+ 
++!pos(X, Y) : not pos(X, Y) <-
+	-+moving(X, Y);
+ 	!move;
+ 	!pos(X, Y).
+	
++!pos(X, Y) : pos(X, Y) <-
+	-moving(X, Y);
+ 	!extinguish.
+ 	
 
 /**
- * When agent arrived at destination
+ * Extinguish fire in adjacent cell
+ * (based on the direction the agent is facing)
  */
--move(X, Y) : ready(extinguish) <-
-	?pos(NX, NY);
-	?facing(NDir);	
-	extinguishFire(NDir, NX, NY).
+ 	
++!extinguish : not extinguished <-			
+	!extinguishFire.
 	
++!extinguish : extinguished <- .print("All the fires have been extinguished!").
 	

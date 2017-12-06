@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import jason.asSyntax.Atom;
@@ -36,8 +37,8 @@ public abstract class Firefighter {
     			init(forest, agName);
     			break;
 				
-			case "goToNearestFire":
-				goToNearestFire(forest, agName, action);
+			case "findNearestFire":
+				findNearestFire(forest, agName, action);
 				break;
 				
 			case "extinguishFire":		        
@@ -94,7 +95,6 @@ public abstract class Firefighter {
 			
 			// update agent beliefs
 			forest.addPercept(agName, Literal.parseLiteral("pos(" + x + ", " + y + ")"));
-			try { Thread.sleep(100);} catch (Exception e) {}
 			forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
 			
 			// verbose
@@ -104,18 +104,20 @@ public abstract class Firefighter {
 	
 	
 	/**
-	 * Moves the agent to the nearest fire (using Manhattan distances)
+	 * Locates the nearest fire (using Manhattan distances)
+	 * and tells the agent to go there
 	 * 
 	 * @param forest Current environment
 	 * @param agName Name of the agent
 	 * @param action Action requested by the agent
 	 */
-	public static void goToNearestFire(Forest forest, String agName, Structure action) {
+	public static void findNearestFire(Forest forest, String agName, Structure action) {
 		
 		try {
 			// get current pos
-			int x = (int)((NumberTerm)action.getTerm(0)).solve();
-	        int y = (int)((NumberTerm)action.getTerm(1)).solve();
+			int[] pos = getPosition(forest, agName);
+			int x = pos[0];
+			int y = pos[1];
 	        
 	        // get forest matrix
 	        int[][] mforest = forest.getForest();
@@ -154,8 +156,7 @@ public abstract class Firefighter {
 	        if (firex == ForestPanel.WIDTH && firey == ForestPanel.HEIGHT) {
 	        	
 		     	// update agent beliefs
-	        	forest.removePerceptsByUnif(agName, Literal.parseLiteral("extinguished(X)"));
-		        forest.addPercept(agName, Literal.parseLiteral("extinguished(true)"));
+		        forest.addPercept(agName, Literal.parseLiteral("extinguished"));
 		        
 		        // verbose
 		        System.out.println("[" + agName + "] No fires located!");
@@ -214,7 +215,7 @@ public abstract class Firefighter {
 	        
 	        // find nearest safe spot of all possible safe spots
 	        int mind = Collections.min(Arrays.asList(upd, downd, leftd, rightd));	        
-	       
+	        
 	        // up
 	        if (mind == upd && upd != fired) {
 	        	newx = firex;
@@ -243,21 +244,18 @@ public abstract class Firefighter {
 	        	// verbose
 		        System.out.println("[" + agName + "] There is no safe spot around the fire located at (" + firex + ", " + firey + ")!");
 	        }
-	        
-	        // verbose
-	        System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
-	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
 	     			
 	     	// update agent beliefs
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("move(X, Y)"));
-	        forest.addPercept(agName, Literal.parseLiteral("move(" + newx + ", " + newy + ")"));
-	        
-	        Thread.sleep(100);
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("goal(X, Y)"));
+	        forest.addPercept(agName, Literal.parseLiteral("goal(" + newx + ", " + newy + ")"));
 	        
 	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
 	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
 	        
-	        System.out.println(forest.consultPercepts(agName).size());
+	        // verbose
+	        System.out.println("[" + agName + "] My position is ("+x+", "+y+").");
+	        System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
+	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
 	       
 		}
 		catch (Exception e) {
@@ -276,11 +274,11 @@ public abstract class Firefighter {
 	public static void extinguishFire(Forest forest, String agName, Structure action) {
 		
 		try {	        
-			System.out.println(1);
 			// get current pos and direction
-			String dir = ((Atom)action.getTerm(0)).toString();
-			int x = (int)((NumberTerm)action.getTerm(1)).solve();
-	        int y = (int)((NumberTerm)action.getTerm(2)).solve();
+			String dir = getDirection(forest, agName);
+			int[] pos = getPosition(forest, agName);
+			int x = pos[0];
+			int y = pos[1];
 	        
 	        // get forest matrix
 	        int[][] mforest = forest.getForest();
@@ -288,17 +286,6 @@ public abstract class Firefighter {
 	        // verbose
 	        int firex = 0;
 	        int firey = 0;
-	        
-	        // check if goToNearestFire couldn't locate a fire
-	        if (forest.containsPercept(agName, Literal.parseLiteral("extinguished(true)"))) {
-	        	
-		        // verbose
-		        System.out.println("[" + agName + "] All the fires have been extinguished!");
-		        
-	        	return;
-	        }
-	        
-	        System.out.println(2);
 	        
 	        switch (dir) {
 	        
@@ -341,9 +328,6 @@ public abstract class Firefighter {
 				default:
 					break;
 			}
-	        
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("ready(extinguish)"));
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("move(X, Y)"));
 	        
 	        // verbose
 	        System.out.println("[" + agName + "] Extinguished fire at (" + firex + ", " + firey + ").");
@@ -579,10 +563,12 @@ public abstract class Firefighter {
 		
 		try {	        
 			// get current pos and goal pos
-			int x = (int)((NumberTerm)action.getTerm(0)).solve();
-	        int y = (int)((NumberTerm)action.getTerm(1)).solve();
-			int gx = (int)((NumberTerm)action.getTerm(2)).solve();
-	        int gy = (int)((NumberTerm)action.getTerm(3)).solve();
+			int[] pos = getPosition(forest, agName);
+			int x = pos[0];
+			int y = pos[1];
+			int[] gpos = getGoal(forest, agName);
+			int gx = gpos[0];
+			int gy = gpos[1];
 	        
 	        // get forest matrix
 	        int[][] mforest = forest.getForest();
@@ -637,18 +623,128 @@ public abstract class Firefighter {
 	     	// update agent beliefs
 	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
 	        forest.addPercept(agName, Literal.parseLiteral("pos(" + nx + ", " + ny + ")"));
-	        
-	        // agent is already at goal position
-	        if (nx == gx && ny == gy) {	        	
-	        	System.out.println("[" + agName + "] I'm where I want to be!");
-	        	forest.removePerceptsByUnif(agName, Literal.parseLiteral("move(X, Y)"));
-	        	forest.addPercept(agName, Literal.parseLiteral("ready(extinguish)"));
-	        	return;
-	        	
-	        }
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-	}	
+	}
+	
+	
+	/**
+	 * Getter
+	 * 
+	 * @param forest Current environment
+	 * @param agName Name of the agent
+	 * 
+	 * @return Current position (pos[x][y])
+	 */
+	public static int[] getPosition(Forest forest, String agName) {
+		
+		int[] pos = new int[2];
+		
+		List<Literal> percepts = forest.consultPercepts(agName);
+		
+		int n = 0;
+		
+		for (Literal p : percepts) {
+			
+			if (p.getFunctor().equals("pos")) {
+				
+				try {
+					
+					pos[0] = (int)((NumberTerm)p.getTerm(0)).solve();
+					pos[1] = (int)((NumberTerm)p.getTerm(1)).solve();
+					n++;
+				}
+				catch (Exception r) {
+					
+				}
+			}
+		}
+		
+		if (n > 1) {
+			System.out.println("[" + agName + "] Duplicated perception found: pos(X, Y)!");
+		}
+		
+		return pos;
+	}
+	
+	
+	/**
+	 * Getter
+	 * 
+	 * @param forest Current environment
+	 * @param agName Name of the agent
+	 * 
+	 * @return Direction (up, down, left or right)
+	 */
+	public static String getDirection(Forest forest, String agName) {
+		
+		String dir = "";
+		
+		List<Literal> percepts = forest.consultPercepts(agName);
+		
+		int n = 0;
+		
+		for (Literal p : percepts) {
+			
+			if (p.getFunctor().equals("facing")) {
+				
+				try {
+					
+					dir = ((Atom)p.getTerm(0)).toString();
+					n++;
+				}
+				catch (Exception r) {
+					
+				}
+			}
+		}
+		
+		if (n > 1) {
+			System.out.println("[" + agName + "] Duplicated perception found: facing(Dir)!");
+		}
+		
+		return dir;
+	}
+	
+	
+	/**
+	 * Getter
+	 * 
+	 * @param forest Current environment
+	 * @param agName Name of the agent
+	 * 
+	 * @return Goal position (pos[x][y])
+	 */
+	public static int[] getGoal(Forest forest, String agName) {
+		
+		int[] goal = new int[2];
+		
+		List<Literal> percepts = forest.consultPercepts(agName);
+		
+		int n = 0;
+		
+		for (Literal p : percepts) {
+			
+			if (p.getFunctor().equals("goal")) {
+				
+				try {
+					
+					goal[0] = (int)((NumberTerm)p.getTerm(0)).solve();
+					goal[1] = (int)((NumberTerm)p.getTerm(1)).solve();
+					n++;
+				}
+				catch (Exception r) {
+					
+				}
+			}
+		}
+		
+		if (n > 1) {
+			System.out.println("[" + agName + "] Duplicated perception found: goal(X, Y)!");
+		}
+		
+		return goal;
+	}
 }
