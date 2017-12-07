@@ -1,24 +1,25 @@
-// TODO limpar moving!
-
 /**
  * This file implements the firefigher agent
  */
 
 /* --- Possible beliefs / perceptions --- */
 
-// pos(X, Y)  			the current position of the agent
-// goal(X, Y)			where the agent wants to go
-// facing(Dir) 			direction the agent is facing. Can only extinguish fires in that direction
 // extinguished 		when all the fires have been extinguished
-// ready				when txt file of environment has been fully loaded
+// extinguishing		the agent is currently extinguishing a nearby fire
+// facing(Dir) 			direction the agent is facing. Can only extinguish fires in that direction
+// goal(X, Y)			where the agent wants to go
+// moving(X, Y)			the agent is currently on its way to (X, Y)
+// pos(X, Y)  			the current position of the agent
+// ready				when environment has been fully loaded
 
 
 /* --- Possible goals --- */
 
-// !start				start the agent
-// !scan				scan the environment, looking for nearest fire and updating goal(GX, GY)
+// !extinguish			extinguish fire nearby, in the direction the agent is currently facing
 // !pos					go from pos(X, Y) to goal(X, Y), one cell at a time
-// !extinguishFire		extinguish fire in nearby, in the direction the agent is currently facing
+// !scan				scan the environment, looking for nearest fire and updating goal(GX, GY)
+// !start				start the agent
+// ![action]			see below for an explanation on actions
 
 
 /* --- Initial goals --- */
@@ -28,13 +29,21 @@
 
 /* --- Actions --- */
 
+// This is used in order to simulate synchronization.
+// If actions are called directly from within a plan,
+// they overlap each other, causing consistency problems.
+// Thus, each action should be wrapped within its own (atomic) goal.
+// Exceptions: init
+
 @findNearestFire[atomic]
 +!findNearestFire : true <-
 	findNearestFire.
+	
 
 @move[atomic]
 +!move : true <-
 	move.
+	
 
 @extinguishFire[atomic]	
 +!extinguishFire : true <-
@@ -60,7 +69,7 @@
 /**
  * Constantly scan the environment,
  * looking for nearest fire
- * and updating goal(X, Y)
+ * and updating goal(X, Y).
  */
  
 +!scan : not extinguished <-
@@ -73,16 +82,17 @@
 
 /**
  * When goal has been added,
- * start moving towards it
+ * start moving towards it.
  */
  
 +goal(X, Y) : not moving(X, Y) & not extinguished <-
 	-+moving(X, Y);
 	!pos(X, Y).
 	
+	
 /**
  * Move towards the goal position,
- * one cell at a time
+ * one cell at a time.
  */
  
 +!pos(X, Y) : not pos(X, Y)  & not extinguished <-
@@ -95,10 +105,12 @@
  	-moving(X, Y);
  	-extinguishing.
  	
+ // prevents exception	
  +!pos(X, Y) : true <- true.
 
+
 /**
- * Extinguish fire in adjacent cell
+ * Extinguish fire in adjacent cell.
  * (based on the direction the agent is facing)
  */
  	

@@ -1,7 +1,6 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.BorderFactory;
@@ -202,7 +201,8 @@ public class ForestPanel extends JPanel {
 		}
 	}
 	
-	  /**
+	
+	/**
      * Getter
      * 
      * @return Matrix representing the current environment
@@ -211,6 +211,12 @@ public class ForestPanel extends JPanel {
 		return forest;
 	}
 	
+	
+	/**
+	 * Getter
+	 * 
+	 * @return Matrix representing the initial environment
+	 */
 	public int[][] getInitialForest() {
 		return initialState;
 	}

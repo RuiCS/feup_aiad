@@ -82,13 +82,12 @@ public abstract class Firefighter {
 			}
 			
 			if (forest.getForest() != null) {
+				
 				// TODO proper initial position
 				
 				// initial position and direction
 				int x = ThreadLocalRandom.current().nextInt(0, ForestPanel.WIDTH);
 				int y = ThreadLocalRandom.current().nextInt(0, ForestPanel.HEIGHT);
-				//int x = 0;
-				//int y = 2;
 				String dir = "down";
 				
 				// place agent on the environment
@@ -96,10 +95,8 @@ public abstract class Firefighter {
 				
 				
 				// update agent beliefs
-				forest.addPercept(agName, Literal.parseLiteral("pos(" + x + ", " + y + ")"));
-				Thread.sleep(10);
-				forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
-				Thread.sleep(10);
+				addPercept(forest, agName, "pos(" + x + ", " + y + ")");
+				addPercept(forest, agName, "facing(" + dir + ")");
 				
 				// verbose
 				System.out.println("[" + agName + "] Initializing at (" + x + ", " + y + "). Facing '" + dir + "'.");
@@ -127,11 +124,6 @@ public abstract class Firefighter {
 			int[] pos = getPosition(forest, agName);
 			int x = pos[0];
 			int y = pos[1];
-			
-			// get goal
-			int[] gpos = getGoal(forest, agName);
-			int gx = gpos[0];
-			int gy = gpos[1];
 	        
 	        // get forest matrix
 	        int[][] mforest = forest.getForest();
@@ -170,8 +162,7 @@ public abstract class Firefighter {
 	        if (firex == ForestPanel.WIDTH && firey == ForestPanel.HEIGHT) {
 	        	
 		     	// update agent beliefs
-		        forest.addPercept(agName, Literal.parseLiteral("extinguished"));
-		        Thread.sleep(10);
+		        addPercept(forest, agName, "extinguished");
 		        
 		        // verbose
 		        System.out.println("[" + agName + "] No fires located!");
@@ -260,30 +251,12 @@ public abstract class Firefighter {
 		        System.out.println("[" + agName + "] There is no safe spot around the fire located at (" + firex + ", " + firey + ")!");
 	        }
 	        
-	     	// update agent beliefs
-	        // since there's an event handler for +goal, we can't simply remove/add, unless the goal changes.
-	        // otherwise, the event will be triggered incorrectly.
-	        /*if (!forest.containsPercept(agName, Literal.parseLiteral("goal(" + newx + ", " + newy + ")")) ||
-	        		!forest.containsPercept(agName, Literal.parseLiteral("facing(" + dir + ")"))) {
-	        	
-	        	forest.removePerceptsByUnif(agName, Literal.parseLiteral("goal(X, Y)"));
-	        	Thread.sleep(10);
-		        forest.addPercept(agName, Literal.parseLiteral("goal(" + newx + ", " + newy + ")"));     
-		        Thread.sleep(10);
-		        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
-		        Thread.sleep(10);
-		        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
-		        Thread.sleep(10);
-	        }*/
+	        // update agent beliefs
+	        removePerceptsByUnif(forest, agName, "goal(X, Y)");
+	        addPercept(forest, agName, "goal(" + newx + ", " + newy + ")");
 	        
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("goal(X, Y)"));
-        	Thread.sleep(10);
-	        forest.addPercept(agName, Literal.parseLiteral("goal(" + newx + ", " + newy + ")"));     
-	        Thread.sleep(10);
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
-	        Thread.sleep(10);
-	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
-	        Thread.sleep(10);
+	        removePerceptsByUnif(forest, agName, "facing(X)");
+	        addPercept(forest, agName, "facing(" + dir + ")");
 	        
 	        // verbose
 	        System.out.println("[" + agName + "] My position is ("+x+", "+y+").");
@@ -689,10 +662,8 @@ public abstract class Firefighter {
 	        		System.out.println("[" + agName + "] Moved from pos("+x+", "+y+") to pos("+nx+", "+ny+").");
 	        		
 	    	     	// update agent beliefs
-	    	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
-	    	        Thread.sleep(10);
-	    	        forest.addPercept(agName, Literal.parseLiteral("pos(" + nx + ", " + ny + ")"));
-	    	        Thread.sleep(10);
+	    	        removePerceptsByUnif(forest, agName, "pos(X, Y)");
+	    	        addPercept(forest, agName, "pos(" + nx + ", " + ny + ")");
 	        	}	        	
 	        } else {
 	        	// verbose
@@ -702,6 +673,39 @@ public abstract class Firefighter {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+	/**
+	 * Adds given perception to given agent
+	 * 
+	 * @param forest Current environment
+	 * @param agName Name of the agent
+	 * @param percept Perception to add
+	 */
+	public static void addPercept(Forest forest, String agName, String percept) {
+		
+		forest.addPercept(agName, Literal.parseLiteral(percept));
+		
+		// necessary, or changes might not get detected
+        try { Thread.sleep(10); } catch (Exception e) {}
+	}
+	
+	
+	/**
+	 * 
+	 * Removes all perceptions from given agent that unify with given perception
+	 * 
+	 * @param forest Current environment
+	 * @param agName Name of the agent
+	 * @param percept Perception to remove
+	 */
+	public static void removePerceptsByUnif(Forest forest, String agName, String percept) {
+		
+		forest.removePerceptsByUnif(agName, Literal.parseLiteral(percept));
+		
+		// necessary, or changes might not get detected
+        try { Thread.sleep(10); } catch (Exception e) {}
 	}
 	
 	

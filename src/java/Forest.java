@@ -59,6 +59,7 @@ public class Forest extends Environment {
     	return gui.getForestPanel().getForest();
     }    
     
+    
     /**
      * Getter
      * 
