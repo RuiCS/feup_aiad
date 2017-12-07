@@ -70,36 +70,45 @@ public abstract class Firefighter {
 	 * @param agName Name of the agent
 	 */
 	public static void init(Forest forest, String agName) {
+		try {
+			
+			if (forest.getForest() == null) {
+				System.out.println("[" + agName + "] - Not ready yet");
+			}
+			else {
+				forest.addPercept(agName, Literal.parseLiteral("ready"));
+				Thread.sleep(10);
+				System.out.println("[" + agName + "] - Ready for action ");
+			}
+			
+			if (forest.getForest() != null) {
+				// TODO proper initial position
+				
+				// initial position and direction
+				int x = ThreadLocalRandom.current().nextInt(0, ForestPanel.WIDTH);
+				int y = ThreadLocalRandom.current().nextInt(0, ForestPanel.HEIGHT);
+				//int x = 0;
+				//int y = 2;
+				String dir = "down";
+				
+				// place agent on the environment
+				forest.getForest()[y][x] = ForestPanel.FIREFIGHTER;
+				
+				
+				// update agent beliefs
+				forest.addPercept(agName, Literal.parseLiteral("pos(" + x + ", " + y + ")"));
+				Thread.sleep(10);
+				forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
+				Thread.sleep(10);
+				
+				// verbose
+				System.out.println("[" + agName + "] Initializing at (" + x + ", " + y + "). Facing '" + dir + "'.");
+			}
+		}
+		catch (Exception e) {
+			
+		}
 		
-		if (forest.getForest() == null) {
-			System.out.println("[" + agName + "] - Not ready yet");
-		}
-		else {
-			forest.addPercept(agName, Literal.parseLiteral("ready"));
-			System.out.println("[" + agName + "] - Ready for action ");
-		}
-		
-		if (forest.getForest() != null) {
-			// TODO proper initial position
-			
-			// initial position and direction
-			//int x = ThreadLocalRandom.current().nextInt(0, ForestPanel.WIDTH);
-			//int y = ThreadLocalRandom.current().nextInt(0, ForestPanel.HEIGHT);
-			int x = 0;
-			int y = 0;
-			String dir = "down";
-			
-			// place agent on the environment
-			forest.getForest()[y][x] = ForestPanel.FIREFIGHTER;
-			
-			
-			// update agent beliefs
-			forest.addPercept(agName, Literal.parseLiteral("pos(" + x + ", " + y + ")"));
-			forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
-			
-			// verbose
-			System.out.println("[" + agName + "] Initializing at (" + x + ", " + y + "). Facing '" + dir + "'.");
-		}
 	}
 	
 	
@@ -118,6 +127,11 @@ public abstract class Firefighter {
 			int[] pos = getPosition(forest, agName);
 			int x = pos[0];
 			int y = pos[1];
+			
+			// get goal
+			int[] gpos = getGoal(forest, agName);
+			int gx = gpos[0];
+			int gy = gpos[1];
 	        
 	        // get forest matrix
 	        int[][] mforest = forest.getForest();
@@ -157,6 +171,7 @@ public abstract class Firefighter {
 	        	
 		     	// update agent beliefs
 		        forest.addPercept(agName, Literal.parseLiteral("extinguished"));
+		        Thread.sleep(10);
 		        
 		        // verbose
 		        System.out.println("[" + agName + "] No fires located!");
@@ -244,13 +259,31 @@ public abstract class Firefighter {
 	        	// verbose
 		        System.out.println("[" + agName + "] There is no safe spot around the fire located at (" + firex + ", " + firey + ")!");
 	        }
-	     			
-	     	// update agent beliefs
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("goal(X, Y)"));
-	        forest.addPercept(agName, Literal.parseLiteral("goal(" + newx + ", " + newy + ")"));
 	        
+	     	// update agent beliefs
+	        // since there's an event handler for +goal, we can't simply remove/add, unless the goal changes.
+	        // otherwise, the event will be triggered incorrectly.
+	        /*if (!forest.containsPercept(agName, Literal.parseLiteral("goal(" + newx + ", " + newy + ")")) ||
+	        		!forest.containsPercept(agName, Literal.parseLiteral("facing(" + dir + ")"))) {
+	        	
+	        	forest.removePerceptsByUnif(agName, Literal.parseLiteral("goal(X, Y)"));
+	        	Thread.sleep(10);
+		        forest.addPercept(agName, Literal.parseLiteral("goal(" + newx + ", " + newy + ")"));     
+		        Thread.sleep(10);
+		        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
+		        Thread.sleep(10);
+		        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
+		        Thread.sleep(10);
+	        }*/
+	        
+	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("goal(X, Y)"));
+        	Thread.sleep(10);
+	        forest.addPercept(agName, Literal.parseLiteral("goal(" + newx + ", " + newy + ")"));     
+	        Thread.sleep(10);
 	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
+	        Thread.sleep(10);
 	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
+	        Thread.sleep(10);
 	        
 	        // verbose
 	        System.out.println("[" + agName + "] My position is ("+x+", "+y+").");
@@ -290,7 +323,7 @@ public abstract class Firefighter {
 	        switch (dir) {
 	        
 				case "up":
-					mforest[y-1][x] = ForestPanel.NORMALTILE; 
+					mforest[y-1][x] = ForestPanel.NORMALTILE; // TODO
 					
 					// verbose
 					firex = x;
@@ -582,47 +615,89 @@ public abstract class Firefighter {
 	        // delta
 	        int dx = gx - x;
 	        int dy = gy - y;
+	        	
+        	// randomly choose whether to move up/down or left/right
+        	int rand = ThreadLocalRandom.current().nextInt(0, 2);
+        	
+	        boolean failVer = false;
+	        boolean failHor = false;
+	        boolean found = false;
 	        
-	        // goal pos is not in same row and not in same col as pos
-	        if (dx != 0 && dy != 0) {
+	        // if goal = pos
+	        if (dx == 0 && dy == 0) {
+	        	found = true;
+	        }
+	        
+	        while (!(failVer && failHor) && !found) {
 	        	
-	        	// randomly choose whether to move up/down or left/right
-	        	int rand = ThreadLocalRandom.current().nextInt(0, 2);
-	        	
-	        	// move vertically
-	        	if (rand == 0) {
+	        	// move vertically (rand chose vertical || goal in same col as pos)
+	        	if (((dx != 0 && dy != 0) && (rand == 0 || failHor)) || (dx == 0 && dy != 0)) {
+	        		
 	        		offset = (dy > 0)? 1 : -1;
-	        		ny = ny + offset;
+	        		
+	        		if (mforest[ny+offset][nx] != ForestPanel.FIRETILE &&
+			        		mforest[ny+offset][nx] != ForestPanel.FIREFIGHTER &&
+			        		mforest[ny+offset][nx] != ForestPanel.PEOPLETILE) {
+			        	
+		        		ny = ny + offset;
+		        		found = true;
+	        		}
+	        		else {
+	        			failVer = true;
+	        			
+	        			// goal in same col as pos
+	        			if (dx == 0 && dy != 0) {
+	        				break;
+	        			}
+	        		}
 	        	}
-	        	// move horizontaly
-	        	else {
+	        	// move horizontally (rand chose horizontal || goal in same row as pos)
+	        	else if (((dx != 0 && dy != 0) && (rand != 0 || failVer)) || (dx != 0 && dy == 0)) {
+	        		
 	        		offset = (dx > 0)? 1 : -1;
-	        		nx = nx + offset;
+	        		
+	        		if (mforest[ny][nx+offset] != ForestPanel.FIRETILE &&
+			        		mforest[ny][nx+offset] != ForestPanel.FIREFIGHTER &&
+			        		mforest[ny][nx+offset] != ForestPanel.PEOPLETILE) {
+	        			
+		        		nx = nx + offset;
+		        		found = true;
+	        		}
+	        		else {
+	        			failHor = true;
+	        			
+	        			// goal in same row as pos
+	        			if (dx != 0 && dy == 0) {
+	        				break;
+	        			}
+	        		}
 	        	}
 	        }
-	        // goal pos in same col as pos
-	        else if (dx == 0 && dy != 0) {
-	        	
-	        	offset = (dy > 0)? 1 : -1;
-        		ny = ny + offset;	        	
-	        }
-	        // goal pos in same row as pos
-	        else if (dx != 0 && dy == 0) {
-	        	
-	        	offset = (dx > 0)? 1 : -1;
-        		nx = nx + offset;	        	
-	        }
+        	
 	        
 	        // place agent on the environment
+	        //mforest[y][x] = forest.getInitialForest()[y][x];
 	        mforest[y][x] = ForestPanel.NORMALTILE; // TODO
 	        mforest[ny][nx] = ForestPanel.FIREFIGHTER;
 	        
-	        // verbose
-	        System.out.println("[" + agName + "] Moved from pos("+x+", "+y+") to pos("+nx+", "+ny+").");
-	     			
-	     	// update agent beliefs
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
-	        forest.addPercept(agName, Literal.parseLiteral("pos(" + nx + ", " + ny + ")"));
+	        if (found) {
+	        	if (dx == 0 && dy == 0) {
+	        		// verbose
+	        		System.out.println("[" + agName + "] Already in position, no need to move!");	
+	        	} else {
+	        		// verbose
+	        		System.out.println("[" + agName + "] Moved from pos("+x+", "+y+") to pos("+nx+", "+ny+").");
+	        		
+	    	     	// update agent beliefs
+	    	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
+	    	        Thread.sleep(10);
+	    	        forest.addPercept(agName, Literal.parseLiteral("pos(" + nx + ", " + ny + ")"));
+	    	        Thread.sleep(10);
+	        	}	        	
+	        } else {
+	        	// verbose
+	        	System.out.println("[" + agName + "] Can't move from pos("+x+", "+y+") at the moment.");	
+	        }
 		}
 		catch (Exception e) {
 			e.printStackTrace();

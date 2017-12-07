@@ -211,6 +211,10 @@ public class ForestPanel extends JPanel {
 		return forest;
 	}
 	
+	public int[][] getInitialForest() {
+		return initialState;
+	}
+	
 
 	public int getWindX() {
 		return windX;

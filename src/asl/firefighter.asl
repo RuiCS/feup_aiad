@@ -11,12 +11,6 @@
 // facing(Dir) 			direction the agent is facing. Can only extinguish fires in that direction
 // extinguished 		when all the fires have been extinguished
 // ready				when txt file of environment has been fully loaded
-// moving(X, Y)			currently moving towards (X, Y)
-
-
-/* --- Initial goals --- */
-
-!start.
 
 
 /* --- Possible goals --- */
@@ -27,22 +21,12 @@
 // !extinguishFire		extinguish fire in nearby, in the direction the agent is currently facing
 
 
-/* --- Plans --- */
+/* --- Initial goals --- */
 
-/**
- * Start the agent.
- * Add it to the environment (forest).
- * Start scanning the environment.
- */
- 
-+!start : ready <-
-	!scan.
-
-+!start : not ready <-
-	init;
-	!start.
+!start.
 
 
+/* --- Actions --- */
 
 @findNearestFire[atomic]
 +!findNearestFire : true <-
@@ -55,11 +39,28 @@
 @extinguishFire[atomic]	
 +!extinguishFire : true <-
 	extinguishFire.
+	
+	
+/* --- Plans --- */
 
 /**
- * Constantly scan the environment
- * looking for nearest fire and
- * updating goal(X, Y)
+ * Start the agent.
+ * Add it to the environment (forest).
+ * Start scanning.
+ */
+ 
++!start : ready <-
+	!scan.
+
++!start : not ready <-
+	init;
+	!start.
+
+
+/**
+ * Constantly scan the environment,
+ * looking for nearest fire
+ * and updating goal(X, Y)
  */
  
 +!scan : not extinguished <-
@@ -71,30 +72,30 @@
 
 
 /**
- * When nearest fire has been found
- * add goal to move towards it
+ * When goal has been added,
+ * start moving towards it
  */
  
-+goal(X, Y) : not moving(X, Y) <-
++goal(X, Y) : not moving(X, Y) & not extinguished <-
+	-+moving(X, Y);
 	!pos(X, Y).
 	
-+goal(X, Y) : moving(X, Y) <- .print("Already moving to requested spot!").
-
-
 /**
  * Move towards the goal position,
  * one cell at a time
  */
  
-+!pos(X, Y) : not pos(X, Y) <-
-	-+moving(X, Y);
++!pos(X, Y) : not pos(X, Y)  & not extinguished <-
  	!move;
  	!pos(X, Y).
 	
-+!pos(X, Y) : pos(X, Y) <-
-	-moving(X, Y);
- 	!extinguish.
++!pos(X, Y) : pos(X, Y) & not extinguished & not extinguishing <-
+	+extinguishing;
+ 	!extinguish;
+ 	-moving(X, Y);
+ 	-extinguishing.
  	
+ +!pos(X, Y) : true <- true.
 
 /**
  * Extinguish fire in adjacent cell
