@@ -23,7 +23,7 @@ public class Forest extends Environment {
     					if (gui.panel != null) {
         					gui.panel.spreadFire();
     					}
-    					Thread.sleep(1000);
+    					Thread.sleep(2000);
     				}
     			} catch (Exception e) {}
     		}

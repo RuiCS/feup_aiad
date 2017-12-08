@@ -252,6 +252,9 @@ public abstract class Firefighter {
 	        }
 	        
 	        // update agent beliefs
+	        removePerceptsByUnif(forest, agName, "fireAt(X, Y)");
+	        addPercept(forest, agName, "fireAt(" + firex + "," + firey + ")");
+	        
 	        removePerceptsByUnif(forest, agName, "goal(X, Y)");
 	        addPercept(forest, agName, "goal(" + newx + ", " + newy + ")");
 	        
@@ -259,9 +262,9 @@ public abstract class Firefighter {
 	        addPercept(forest, agName, "facing(" + dir + ")");
 	        
 	        // verbose
-	        System.out.println("[" + agName + "] My position is ("+x+", "+y+").");
-	        System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
-	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
+	        //System.out.println("[" + agName + "] My position is ("+x+", "+y+").");
+	        //System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
+	        //System.out.println("[" + agName + "] Planning to move to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
 	       
 		}
 		catch (Exception e) {
@@ -656,7 +659,7 @@ public abstract class Firefighter {
 	        if (found) {
 	        	if (dx == 0 && dy == 0) {
 	        		// verbose
-	        		System.out.println("[" + agName + "] Already in position, no need to move!");	
+	        		System.out.println("[" + agName + "] Already in position, no need to move! pos(" + pos[0] + "," + pos[1] + ")");
 	        	} else {
 	        		// verbose
 	        		System.out.println("[" + agName + "] Moved from pos("+x+", "+y+") to pos("+nx+", "+ny+").");

@@ -74,7 +74,16 @@ public class ForestPanel extends JPanel {
 		windY = r.nextInt(100) * sign;
 		
 		forest = temp;
-		initialState=forest;
+		this.initialState = new int[forest.length][forest[0].length];
+		for (int i = 0; i < forest.length; i++) {
+			for (int j = 0; j < forest[i].length; j++) {
+				
+				// TODO maybe improve this
+				if (forest[i][j] == FIRETILE) this.initialState[i][j] = NORMALTILE;
+				else this.initialState[i][j] = forest[i][j];
+			}
+		}
+		
 	}
 	
 
@@ -90,7 +99,16 @@ public class ForestPanel extends JPanel {
 		this.windY = windY;
 		// TODO change
 		this.forest = forest;
-		this.initialState = forest;
+
+		this.initialState = new int[forest.length][forest[0].length];
+		for (int i = 0; i < forest.length; i++) {
+			for (int j = 0; j < forest[i].length; j++) {
+				
+				// TODO maybe improve this
+				if (forest[i][j] == FIRETILE) this.initialState[i][j] = NORMALTILE;
+				else this.initialState[i][j] = forest[i][j];
+			}
+		}
 		this.defaultConfig();
 	}
 	

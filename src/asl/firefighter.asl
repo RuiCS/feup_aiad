@@ -85,28 +85,77 @@
  * start moving towards it.
  */
  
-+goal(X, Y) : not moving(X, Y) & not extinguished <-
++goal(X, Y) : not moving(X, Y) & commitedGoal(_,_,FCX,FCY) & not extinguished <-
+	?fireAt(FX,FY);
+	!informOthersOfPlan(X,Y,FX,FY);
 	-+moving(X, Y);
-	!pos(X, Y).
+	!pos(X, Y,FCX,FCY).
 	
++goal(X, Y) : not moving(X, Y) & not commitedGoal(_,_,_,_) & not extinguished <-
+	?fireAt(FX,FY);
+	!informOthersOfPlan(X,Y,FX,FY);
+	-+moving(X, Y);
+	!pos(X, Y,FX,FY).
+
+/**
+ * The colaboration algorithm:
+ * 	1. Get goal (cell near fire) and set
+ *  2. Inform others of this choice
+ * 	3. If someone has made this choice already, back off
+ * 	4. Else go to goal
+ */
+
+// I made the choice first
++going(X,Y,FX,FY)[source(A)] : .my_name(Me) & not (A == Me) & commitedGoal(X,Y,FX,FY)<- 
+	.print("Got Going(",X,",",Y,")[source(",A,")] - I MADE THIS CHOICE FIRST").
+// I made a different choice
++going(X,Y,FX,FY)[source(A)] : .my_name(Me) & not (A == Me) & not commitedGoal(X,Y,FX,FY)<- 
+	.print("Got Going(",X,",",Y,")[source(",A,")] - I MADE A DIFFERENT CHOICE SO I KEEP IT").
+// I did not make the choice first
++commitedGoal(X,Y,FX,FY) : .my_name(Me) & going(X,Y,FX,FY)[source(A)] & not (A==Me) <-
+	-commitedGoal(X,Y,FX,FY).
+
++arrived(X,Y,FX,FY)[source(A)] : .my_name(Me) & not (A==Me) & going(X,Y,FX,FY)[source(A)] <-
+	.print("-------------------- AGENT ", A, " GOT TO GOAL ", X, ",", Y, " for fire at ", FX, ",", FY,")");
+	-going(X,Y,FX,FY)[source(A)].
++arrived(X,Y,FX,FY)[source(A)] : .my_name(Me) & not(A==Me) & not going(X,Y,FX,FY)[source(A)] <- .print("------- IGNORED").
+
+/**
+ * Inform other agents of this agent's intention in going to a given cell.
+ */
+
++!informOthersOfPlan(X,Y,FX,FY) : not commitedGoal(_,_,_,_) <-
+	+commitedGoal(X,Y,FX,FY);
+	.broadcast(tell,going(X,Y,FX,FY)).
++!informOthersOfPlan(X,Y,FX,FY) : commitedGoal(_,_,_,_) <- true.
 	
+/**
+ * Inform other agents that this agent reached its goal
+ */
+
++!informOthersOfSuccess(X,Y,FX,FY) : commitedGoal(X,Y,FX,FY) <-
+	.broadcast(tell, arrived(X,Y,FX,FY));
+	-commitedGoal(X,Y,FX,FY).
++!informOthersOfSuccess(X,Y,FX,FY) : true <- true.
+
 /**
  * Move towards the goal position,
  * one cell at a time.
  */
  
-+!pos(X, Y) : not pos(X, Y)  & not extinguished <-
++!pos(X, Y,FX,FY) : not pos(X, Y)  & not extinguished & not extinguishing<-
  	!move;
- 	!pos(X, Y).
+ 	!pos(X, Y,FX,FY).
 	
-+!pos(X, Y) : pos(X, Y) & not extinguished & not extinguishing <-
++!pos(X, Y,FX,FY) : pos(X, Y) & not extinguished & not extinguishing <-
 	+extinguishing;
  	!extinguish;
  	-moving(X, Y);
+ 	!informOthersOfSuccess(X,Y,FX,FY);
  	-extinguishing.
  	
  // prevents exception	
- +!pos(X, Y) : true <- true.
+ +!pos(X, Y,FX,FY) : true <- true.
 
 
 /**

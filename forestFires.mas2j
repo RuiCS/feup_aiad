@@ -5,7 +5,7 @@ MAS forestFires {
 	environment: Forest
 
 	agents:
-		firefighter #3;
+		firefighter #5;
 
 	aslSourcePath:
 		"src/asl";
