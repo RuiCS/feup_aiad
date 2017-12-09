@@ -61,7 +61,6 @@ public abstract class Firefighter {
     	return true;
 	}
 	
-	
 	/**
 	 * Places the newly created firefighter in the forest
 	 * and updates its beliefs accordingly
@@ -107,7 +106,6 @@ public abstract class Firefighter {
 		}
 		
 	}
-	
 	
 	/**
 	 * Locates the nearest fire (using Manhattan distances)
@@ -272,7 +270,6 @@ public abstract class Firefighter {
 		}
 	}
 	
-	
 	/**
 	 * Extinguishes fire in the direction the agent is facing
 	 * 
@@ -367,9 +364,9 @@ public abstract class Firefighter {
 	        }
 			
 			// get current pos
-			int x = (int)((NumberTerm)action.getTerm(1)).solve();
-	        int y = (int)((NumberTerm)action.getTerm(2)).solve();
-	        
+			int[] pos = getPosition(forest, agName);
+			int x = pos[0];
+			int y = pos[1];
 	        
 	        // get forest matrix
 	        int[][] mforest = forest.getForest();
@@ -377,10 +374,19 @@ public abstract class Firefighter {
 	        // distance to nearest person
 	        int peopled = ForestPanel.WIDTH + ForestPanel.HEIGHT;
 	        
-	        // nearest person position
+	        // nearest person position and fire around them position
 	        int peoplex = ForestPanel.WIDTH;
 	        int peopley = ForestPanel.HEIGHT;
 	        
+	        // safe spot around possible fire
+			int[] fireFightingInfo;
+			int safeCellx = ForestPanel.WIDTH;
+			int safeCelly = ForestPanel.HEIGHT;	
+			int victimFirex = ForestPanel.WIDTH;
+			int victimFirey = ForestPanel.HEIGHT;
+			String safeDir = "";
+	        
+			
 	        // find nearest person
 	        for (int i = 0; i < ForestPanel.HEIGHT; i++) {
 	        	
@@ -388,20 +394,51 @@ public abstract class Firefighter {
 	        		
 	        		// if it's a person, check if it's a victim (fire is close) 
 	        		if (mforest[i][j] == ForestPanel.PEOPLETILE) {
-	        			
-	        			boolean isVictim = lookAroundPerson(forest, j, i);
-	        			
+	        			System.out.println("there's a preson at ("+ j + " "+ i+")");
+	        			fireFightingInfo = lookAroundPerson(forest, j, i, pos);
+
 	        			// if it's a victim, check distance to agent (it goes to the closer one)
-	        			if(isVictim) {
+	        			if(fireFightingInfo[0] != -1) {
+	        				
 		        			int dx = Math.abs(i - y);
 		        			int dy = Math.abs(j - x);
 		        			
 		        			// found closer victim
 		        			if (dx + dy < peopled) {
-			        			
+		        				
+		        				//set fire position and safe direction
+		        				victimFirex = fireFightingInfo[0];
+		        				victimFirey = fireFightingInfo[1];
+		        				switch (fireFightingInfo[2]) {
+		        					case 0: {
+		        						safeDir = "up";
+		        						break;}
+
+		        					case 1: {
+		        						safeDir = "down";
+		        						break;}
+
+		        					case 2: {
+		        						safeDir = "left";
+		        						break;}
+
+		        					case 3: {
+		        						safeDir = "right";
+		        						break;}
+		        				}
+
+		        				//get safe cell
+		        				int[] safeCell = findSafeCell(fireFightingInfo);
+		        				safeCellx = safeCell[1]; //idek a ordem já
+		        				safeCelly = safeCell[0];
+		        				
+		        				//set new closest victim
 			        			peoplex = j;
 			        			peopley = i;
 			        			peopled = dx + dy;
+
+		              			System.out.println("Chose victim at ("+ j + " "+ i+")");
+		              			System.out.println("Because there's fire at ("+ victimFirex + " "+ victimFirey+")");
 	        			}
 	        			}
 
@@ -413,111 +450,33 @@ public abstract class Firefighter {
 	        if (peoplex == ForestPanel.WIDTH && peopley == ForestPanel.HEIGHT) {
 	        			        
 		        // verbose
-		        System.out.println("[" + agName + "] No victims right now");
+		        System.out.println("[" + agName + "] No victims with safe spots around");
 		        
 		        return;
 	        }
 	        
-	        // new agent pos and direction
-	        int newx = x;
-	        int newy = y;
-	        String dir = "down";
-	        
-	        // distance to cells around nearest fire
-	        int upd = peopled;
-	        int downd = peopled;
-	        int leftd = peopled;
-	        int rightd = peopled;	
-	        
-	        // find possible safe spots near the nearest victim
-	        // up
-	        if (peopley-1 > 0 
-	        		&& mforest[peopley-1][peoplex] != ForestPanel.FIRETILE 
-	        		&& (mforest[peopley-1][peoplex] != ForestPanel.FIREFIGHTER
-	        				|| (peopley-1 == y  && peoplex == x))
-	        		&& mforest[peopley-1][peoplex] != ForestPanel.PEOPLETILE
-	        		) {	
-	        	upd = Math.abs(peopley-1 - y) + Math.abs(peoplex - x);
-	        }
-	        // down
-	        if (peopley+1 < ForestPanel.HEIGHT 
-	        		&& mforest[peopley+1][peoplex] != ForestPanel.FIRETILE
-	        		&& (mforest[peopley+1][peoplex] != ForestPanel.FIREFIGHTER
-	        				|| (peopley+1 == y  && peoplex == x))
-	        		&& mforest[peopley+1][peoplex] != ForestPanel.PEOPLETILE
-	        		) {	
-	        	downd = Math.abs(peopley+1 - y) + Math.abs(peoplex - x);
-	        }
-	        // left
-	        if (peoplex-1 > 0 
-	        		&& mforest[peopley][peoplex-1] != ForestPanel.FIRETILE 
-	        		&& (mforest[peopley][peoplex-1] != ForestPanel.FIREFIGHTER
-	        				|| (peopley == y  && peoplex-1 == x))
-	        		&& mforest[peopley][peoplex-1] != ForestPanel.PEOPLETILE
-	        		) {	
-	        	leftd = Math.abs(peopley - y) + Math.abs(peoplex-1 - x);
-	        }
-	        // right
-	        if (peoplex+1 < ForestPanel.WIDTH 
-	        		&& mforest[peopley][peoplex+1] != ForestPanel.FIRETILE 
-	        		&& (mforest[peopley][peoplex+1] != ForestPanel.FIREFIGHTER
-	        				|| (peopley == y  && peoplex+1 == x))
-	        		&& mforest[peopley][peoplex+1] != ForestPanel.PEOPLETILE
-	        		) {	
-	        	rightd = Math.abs(peopley - y) + Math.abs(peoplex+1 - x);
-	        }
-	        
-	        // find nearest safe spot of all possible safe spots
-	        int mind = Collections.min(Arrays.asList(upd, downd, leftd, rightd));	        
-	       
-	        // up
-	        if (mind == upd && upd != peopled) {
-	        	newx = peoplex;
-	        	newy = peopley-1;
-	        	dir = "down";
-	        }
-	        // down
-	        else if (mind == downd && downd != peopled) {
-	        	newx = peoplex;
-	        	newy = peopley+1;
-	        	dir = "up";
-	        }
-	        // left
-	        else if (mind == leftd && leftd != peopled) {
-	        	newx = peoplex-1;
-	        	newy = peopley;
-	        	dir = "right";
-	        }
-	        // right
-	        else if (mind == rightd && rightd != peopled) {
-	        	newx = peoplex+1;
-	        	newy = peopley;
-	        	dir = "left";
-	        }
-	        else {
+	        if(safeDir == "") {
 	        	// verbose
-		        System.out.println("[" + agName + "] There is no safe spot around the victim located at (" + peoplex + ", " + peopley + ")!");
+		        System.out.println("[" + agName + "] There is no safe spot around the victim fire located at (" + victimFirex + ", " + victimFirey + ")!");
+		        return;
 	        }
 	        
-	        // place agent on the environment
-	        mforest[y][x] = ForestPanel.NORMALTILE;
-	        mforest[newy][newx] = ForestPanel.FIREFIGHTER;
+	        //TODO maybe verificacoes? se vars nao estao == a inicializacao
 	        
 	        // verbose
 	        System.out.println("[" + agName + "] Nearest victim located at (" + peoplex + ", " + peopley + ").");
-	        System.out.println("[" + agName + "] Moving to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
-	        System.out.println("[" + agName + "] Cleared (" + x + ", " + y + ")["+mforest[y][x]+"] and went to (" + newx + " " + newy +")["+mforest[newy][newx]+"]");
+	        System.out.println("[" + agName + "] Nearest victim FIRE located at (" + victimFirex + ", " + victimFirey + ").");
+	        System.out.println("[" + agName + "] Moving to (" + safeCellx + ", " + safeCelly + "). Facing '" + safeDir + "'.");
 	       	     			
-	     	// update agent beliefs
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("pos(X, Y)"));
-	        forest.addPercept(agName, Literal.parseLiteral("pos(" + newx + ", " + newy + ")"));
+	        // update agent beliefs
+	        removePerceptsByUnif(forest, agName, "fireAt(X, Y)");
+	        addPercept(forest, agName, "fireAt(" + victimFirex + "," + victimFirey + ")");
 	        
-	        Thread.sleep(100);
-	        	        
-	        forest.removePerceptsByUnif(agName, Literal.parseLiteral("facing(X)"));
-	        forest.addPercept(agName, Literal.parseLiteral("facing(" + dir + ")"));
+	        removePerceptsByUnif(forest, agName, "goal(X, Y)");
+	        addPercept(forest, agName, "goal(" + safeCellx + ", " + safeCelly + ")");
 	        
-	        
+	        removePerceptsByUnif(forest, agName, "facing(X)");
+	        addPercept(forest, agName, "facing(" + safeDir + ")");
 	       
 		}
 		catch (Exception e) {
@@ -526,38 +485,234 @@ public abstract class Firefighter {
 	}
 	
 	/**
+	 * Find safe cell knowing where the fire is and the safe cell direction
+	 * @param forest
+	 * @param victimFirex
+	 * @param victimFirey
+	 * @param dir
+	 * @return
+	 */
+	public static int[] findSafeCell(int[] fireInfo) {
+		
+		int[] res = {-1,-1}; //safe cell position
+		int victimFirey = fireInfo[1];
+		int victimFirex = fireInfo[0];
+		int dir = fireInfo[2];
+		
+		/*
+		 * 0 - up 
+		 * 1 - down
+		 * 2 - left
+		 * 3 - right
+		 */
+		// up - fire is down from here
+	    if (dir == 0) {	
+	    	res[1] = victimFirey-1; 
+	    	res[0] = victimFirex;
+	    }
+	    // down
+	    if (dir == 1) {	
+	    	res[1] = victimFirey+1;
+	    	res[0] = victimFirex;
+	    }
+	    // left
+	    if (dir == 2) {	
+	    	res[1] = victimFirey;
+	    	res[0] = victimFirex-1;
+	    }
+	    // right
+	    if (dir == 3) {	
+	    	res[1] = victimFirey;
+	    	res[0] = victimFirex+1;
+	    }
+		
+		return res;
+		
+	}
+	
+	/**
+	 * Check there's a safe spot near the victim fire
+	 * 
+	 * @param forest
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public static int[] thereIsASafeSpotNear(Forest forest, int victimFirex, int victimFirey, int[]currPos) {
+		
+		int[] res = new int[3];
+		int x = currPos[0];
+		int y = currPos[1];
+		int[][] mforest = forest.getForest();
+	    
+	    // new agent pos and direction
+	    int dir = -1, newx = -1, newy = -1;
+	    
+	    // distance to cells around nearest fire
+	    int peopled = ForestPanel.WIDTH;
+	    int upd = peopled, downd = peopled, leftd = peopled, rightd = peopled;
+	    
+	    // find possible safe spots near the nearest victim fire
+	    // up
+	    if (victimFirey-1 > 0 
+	    		&& mforest[victimFirey-1][victimFirex] != ForestPanel.FIRETILE 
+	    		&& (mforest[victimFirey-1][victimFirex] != ForestPanel.FIREFIGHTER
+	    				|| (victimFirey-1 == y  && victimFirex == x))
+	    		&& mforest[victimFirey-1][victimFirex] != ForestPanel.PEOPLETILE
+	    		) {	
+	    	System.out.println("Safe spot : up");
+	    	upd = Math.abs(victimFirey-1 - y) + Math.abs(victimFirex - x);
+	    }
+	    // down
+	    if (victimFirey+1 < ForestPanel.HEIGHT 
+	    		&& mforest[victimFirey+1][victimFirex] != ForestPanel.FIRETILE
+	    		&& (mforest[victimFirey+1][victimFirex] != ForestPanel.FIREFIGHTER
+	    				|| (victimFirey+1 == y  && victimFirex == x))
+	    		&& mforest[victimFirey+1][victimFirex] != ForestPanel.PEOPLETILE
+	    		) {	
+	    	System.out.println("Safe spot : down");
+	    	downd = Math.abs(victimFirey+1 - y) + Math.abs(victimFirex - x);
+	    }
+	    // left
+	    if (victimFirex-1 > 0 
+	    		&& mforest[victimFirey][victimFirex-1] != ForestPanel.FIRETILE 
+	    		&& (mforest[victimFirey][victimFirex-1] != ForestPanel.FIREFIGHTER
+	    				|| (victimFirey == y  && victimFirex-1 == x))
+	    		&& mforest[victimFirey][victimFirex-1] != ForestPanel.PEOPLETILE
+	    		) {	
+	    	System.out.println("Safe spot : left");
+	    	leftd = Math.abs(victimFirey - y) + Math.abs(victimFirex-1 - x);
+	    }
+	    // right
+	    if (victimFirex+1 < ForestPanel.WIDTH 
+	    		&& mforest[victimFirey][victimFirex+1] != ForestPanel.FIRETILE 
+	    		&& (mforest[victimFirey][victimFirex+1] != ForestPanel.FIREFIGHTER
+	    				|| (victimFirey == y  && victimFirex+1 == x))
+	    		&& mforest[victimFirey][victimFirex+1] != ForestPanel.PEOPLETILE
+	    		) {	
+	    	System.out.println("Safe spot : right");
+	    	rightd = Math.abs(victimFirey - y) + Math.abs(victimFirex+1 - x);
+	    }
+	    
+	    // find nearest safe spot of all possible safe spots
+        int mind = Collections.min(Arrays.asList(upd, downd, leftd, rightd));	        
+       	    
+	    // up - 0
+	    if (upd == mind && upd != peopled) {
+	    	//dir = "down";
+	    	newx = victimFirex;
+        	newy = victimFirey-1;
+	    	dir = 0;
+	    }
+	    // down - 1
+	    else if (downd == mind && downd != peopled) {
+	    	//dir = "up";
+	    	newx = victimFirex;
+        	newy = victimFirey+1;
+	    	dir = 1;
+	    }
+	    // left - 2
+	    else if (leftd == mind && leftd != peopled) {
+	    	//dir = "right";
+	    	newx = victimFirex-1;
+        	newy = victimFirey;
+	    	dir = 2;
+	    }
+	    // right - 3
+	    else if (rightd == mind && rightd != peopled) {
+	    	//dir = "left";
+	    	newx = victimFirex+1;
+        	newy = victimFirey;
+	    	dir = 3;
+	    }
+	    else {
+	    	// verbose
+	        System.out.println("[ temporary ] There is no safe spot around the victim fire located at (" + victimFirex + ", " + victimFirey + ")!");
+	    }
+	    
+	    res[0] = newx;
+	    res[1] = newy;
+	    res[2] = dir;
+	    
+	    return res;
+    
+    }
+	
+	/**
 	 * Determine if person is victim (if there's a fire close by)
 	 * 
 	 * @param forest Current environment
 	 * @param int x person x position
 	 * @param int y person y position
 	 */
-	public static boolean lookAroundPerson(Forest forest, int x, int y) {
-		
+	public static int[] lookAroundPerson(Forest forest, int x, int y, int[] currPos) {
+		System.out.println("*Looking around (" + x + " " + y + ")");
+		int[] res = {0,0};
 		int[][] mforest = forest.getForest();
 		
-		// person is in danger if fire is closer than 2 cells
-        if ((y+1 < ForestPanel.HEIGHT && mforest[y+1][x] == ForestPanel.FIRETILE) ||
-        		(x+1 < ForestPanel.WIDTH && mforest[y][x+1] == ForestPanel.FIRETILE) ||
-        		(y-1 > 0 && mforest[y-1][x] == ForestPanel.FIRETILE) ||
-        		(x-1 > 0 && mforest[y][x-1] == ForestPanel.FIRETILE) ||
-        		
-        		(y+2 < ForestPanel.HEIGHT && mforest[y+1][x] == ForestPanel.FIRETILE) ||
-        		(x+2 < ForestPanel.WIDTH && mforest[y][x+1] == ForestPanel.FIRETILE) ||
-        		(y-2 > 0 && mforest[y-1][x] == ForestPanel.FIRETILE) ||
-        		(x-2 > 0 && mforest[y][x-1] == ForestPanel.FIRETILE) ||
-        		
-        		(y+3 < ForestPanel.HEIGHT && mforest[y+1][x] == ForestPanel.FIRETILE) ||
-        		(x+3 < ForestPanel.WIDTH && mforest[y][x+1] == ForestPanel.FIRETILE) ||
-        		(y-3 > 0 && mforest[y-1][x] == ForestPanel.FIRETILE) ||
-        		(x-3 > 0 && mforest[y][x-1] == ForestPanel.FIRETILE))
+		int[] fireInfo = {-1,-1,-1};
+		
+		// person is in danger if fire is closer than 1 cell
+		System.out.println("mforest[y+1][x] "+ mforest[y+1][x]);
+        if (y+1 < ForestPanel.HEIGHT && mforest[y+1][x] == ForestPanel.FIRETILE){  //forest[y][x]
+        	res[1] = y + 1; res[0] = x;
+        	fireInfo = thereIsASafeSpotNear(forest, res[0], res[1], currPos);
+        	if(fireInfo[0] != -1) {
+        		return fireInfo;
+        	}
+        } 
+        System.out.println("mforest[y][x+1] "+ mforest[y][x+1]);
+        if (x+1 < ForestPanel.WIDTH && mforest[y][x+1] == ForestPanel.FIRETILE){
+        	res[1] = y; res[0] = x + 1;
+        	fireInfo = thereIsASafeSpotNear(forest, res[0], res[1], currPos);
+        	if(fireInfo[0] != -1) {
+        		return fireInfo;
+       	 	}
+        }
+        System.out.println("mforest[y-1][x] "+ mforest[y-1][x]);
+        if(y-1 > 0 && mforest[y-1][x] == ForestPanel.FIRETILE){
+        	res[0] = y - 1; res[1] = x;
+         	fireInfo = thereIsASafeSpotNear(forest, res[0], res[1], currPos);
+         	if(fireInfo[0] != -1) {
+        		return fireInfo;
+        	}
+        }
+        System.out.println("mforest[y][x-1]  "+ mforest[y][x-1] );
+        if(x-1 > 0 && mforest[y][x-1] == ForestPanel.FIRETILE){
+        	res[0] = y; res[1] = x - 1;
+        	fireInfo = thereIsASafeSpotNear(forest, res[0], res[1], currPos);
+        	if(fireInfo[0] != -1) {
+        		return fireInfo;
+       	 	}
+        } 
+      //diagonal
+        /*tb nao e preciso
+        else if (x+1 < ForestPanel.WIDTH && y+1 < ForestPanel.HEIGHT && mforest[y+1][x+1] == ForestPanel.FIRETILE) 
+        	{res[0] = y + 1; res[1] = x + 1;} 
+        else if (x-1 > 0 && y-1 > 0 && mforest[y-1][x-1] == ForestPanel.FIRETILE)
+        	{res[0] = y - 1; res[1] = x - 1;} 
+        else if (x+1 < ForestPanel.WIDTH  && y-1 > 0 && mforest[y-1][x+1] == ForestPanel.FIRETILE) 
+        	{res[0] = y - 1; res[1] = x + 1;} 
+        else if (x-1 > 0   && y+1 < ForestPanel.HEIGHT && mforest[y+1][x-1] == ForestPanel.FIRETILE) 
+        	{res[0] = y + 1; res[1] = x - 1;}
+		else if (y+2 < ForestPanel.HEIGHT && mforest[y+2][x] == ForestPanel.FIRETILE) 
+			{res[0] = y + 2; res[1] = x;}
+		else if (x+2 < ForestPanel.WIDTH && mforest[y][x+2] == ForestPanel.FIRETILE) 
+			{res[0] = y; res[1] = x + 2;} 
+		else if (y-2 > 0 && mforest[y-2][x] == ForestPanel.FIRETILE) 
+			{res[0]= y - 2; res[1] = x;} 
+		else if (x-2 > 0 && mforest[y][x-2] == ForestPanel.FIRETILE) 
+			{res[0]= y; res[1] = x - 2;}
+        		*//*
+        		//no need for 2 cell diagonal
+        		||
+        		(x+2 < ForestPanel.WIDTH && y+2 < ForestPanel.HEIGHT && mforest[y+2][x+2] == ForestPanel.FIRETILE) ||
+        		(x-2 > 0 && y-2 > 0 && mforest[y-2][x-2] == ForestPanel.FIRETILE) ||
+        		(x+2 < ForestPanel.WIDTH  && y-2 > 0 && mforest[y-2][x+2] == ForestPanel.FIRETILE) ||
+        		(x-2 > 0 && y+2 < ForestPanel.HEIGHT && mforest[y+2][x-2] == ForestPanel.FIRETILE) */
+        System.out.println("*Returning (" + fireInfo[0] + "," + fireInfo[1] +"," +fireInfo[2] + ")");
+        return fireInfo;
         
-        {	
-        	return true;
-        }
-        else {
-        	return false;
-        }
 	}
 	
 	
@@ -678,7 +833,6 @@ public abstract class Firefighter {
 		}
 	}
 	
-	
 	/**
 	 * Adds given perception to given agent
 	 * 
@@ -693,7 +847,6 @@ public abstract class Firefighter {
 		// necessary, or changes might not get detected
         try { Thread.sleep(10); } catch (Exception e) {}
 	}
-	
 	
 	/**
 	 * 
@@ -710,8 +863,7 @@ public abstract class Firefighter {
 		// necessary, or changes might not get detected
         try { Thread.sleep(10); } catch (Exception e) {}
 	}
-	
-	
+		
 	/**
 	 * Getter
 	 * 
@@ -751,7 +903,6 @@ public abstract class Firefighter {
 		return pos;
 	}
 	
-	
 	/**
 	 * Getter
 	 * 
@@ -789,7 +940,6 @@ public abstract class Firefighter {
 		
 		return dir;
 	}
-	
 	
 	/**
 	 * Getter
