@@ -11,17 +11,13 @@ public class ForestPanel extends JPanel {
 	// This was needed for whatever reason
 	private static final long serialVersionUID = 1L;
 	
-	// Tile translation
-	private final int victimTile = 4;
-	private final int firefighterTile = 5;
-	private final int firefighterWithVictimTile = 6;
-	//TODO clean up
 	public static final int NORMALTILE = 0;
 	public static final int DENSETILE = 1;
 	public static final int CONCRETETILE = 2;
 	public static final int FIRETILE = 3;
 	public static final int PEOPLETILE = 4;
 	public static final int FIREFIGHTER = 5;
+	public static final int FIREFIGHTERWITHVICTIM = 6;
 	public static int WIDTH;
 	public static int HEIGHT;
 	
@@ -122,6 +118,7 @@ public class ForestPanel extends JPanel {
 	public int[][] addCluster(int[][] f, int clusterType, int tileType, int x, int y, int xSize, int ySize) {
 		
 		int[][] temp = f;
+		Random r = new Random();
 		
 		switch (clusterType) {
 		
@@ -131,6 +128,7 @@ public class ForestPanel extends JPanel {
 					for(int j = 0; j < temp[i].length; j++) {
 						if ( ((j - x)*(j - x) + (i - y)*(i - y)) <= xSize*xSize) {
 							temp[i][j] = tileType;
+							if (r.nextInt(30) < 1 && tileType == FIRETILE) temp[i][j] = PEOPLETILE;
 						}
 					}
 				}
@@ -147,6 +145,7 @@ public class ForestPanel extends JPanel {
 									continue;
 								}else {
 									temp[i][j] = tileType;
+									if (r.nextInt(30) < 1  && tileType == FIRETILE) temp[i][j] = PEOPLETILE;
 								}
 							}
 						}
@@ -165,7 +164,10 @@ public class ForestPanel extends JPanel {
 							if ( x+j < 0 || y+i < 0 || x+j >= temp.length || y+i >= temp[0].length ) {
 								continue;
 							}
-							else temp[x+j][y+i] = tileType;
+							else {
+								temp[x+j][y+i] = tileType;
+								if (r.nextInt(30) < 1  && tileType == FIRETILE) temp[i][j] = PEOPLETILE;
+							}
 						}
 					}
 				}
@@ -208,6 +210,10 @@ public class ForestPanel extends JPanel {
 					case(PEOPLETILE): { 
 						g.setColor(Color.BLUE);
 						break; 
+					}
+					case(FIREFIGHTERWITHVICTIM):{
+						g.setColor(Color.BLACK);
+						break;
 					}
 					default: break;
 				}

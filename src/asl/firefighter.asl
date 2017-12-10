@@ -53,6 +53,9 @@
 +!savePeople : true <- 
 	savePeople.
 	
+@takeVictimToSafety[atomic]
++!takeVictimToSafety : true <-
+	takeVictimToSafety.
 	
 /* --- Plans --- */
 
@@ -78,7 +81,7 @@
  
 +!scan : not extinguished <-
 	!findNearestFire;
-	!savePeople;
+	//!savePeople;
 	!scan.
 
 +!scan : extinguished <-
@@ -91,47 +94,41 @@
  */
  
 +goal(X, Y) : not moving(X, Y) & commitedGoal(_,_,FCX,FCY) & not extinguished <-
-.print("****New goal (" , X, " " , Y , "), but I already have one");
-	?fireAt(FX,FY);
-.print("****My goal is for fire at (" , FCX, " " , FCY , ")");
-	!informOthersOfPlan(X,Y,FX,FY);
 	-+moving(X, Y);
 	!pos(X, Y,FCX,FCY).
 	
 +goal(X, Y) : not moving(X, Y) & not commitedGoal(_,_,_,_) & not extinguished <-
-.print("****New goal (" , X, " " , Y , ")");
 	?fireAt(FX,FY);
-.print("****For fire at (" , FX, " " , FY , ")");
 	!informOthersOfPlan(X,Y,FX,FY);
 	-+moving(X, Y);
 	!pos(X, Y,FX,FY).
 	
-+goal(X,Y) : true <-
-	.print("****Someone extinguished the fire where I was going.").
-	
-
++goal(X,Y) : true <- true.
+ 
 /**
  * The colaboration algorithm:
  * 	1. Get goal (cell near fire) and set
  *  2. Inform others of this choice
  * 	3. If someone has made this choice already, back off
  * 	4. Else go to goal
+ * 	5. Upon reaching goal, inform others of arrival
  */
 
 // I made the choice first
-+going(X,Y,FX,FY)[source(A)] : .my_name(Me) & not (A == Me) & commitedGoal(X,Y,FX,FY)<- 
-	.print("****Received Going(",X,",",Y,")[source(",A,")] - I MADE THIS CHOICE FIRST").
++going(X,Y,FX,FY)[source(A)] : .my_name(Me) & not (A == Me) & commitedGoal(X,Y,FX,FY)<- true.
 // I made a different choice
 +going(X,Y,FX,FY)[source(A)] : .my_name(Me) & not (A == Me) & not commitedGoal(X,Y,FX,FY)<- 
-	.print("****Received Going(",X,",",Y,")[source(",A,")] - I MADE A DIFFERENT CHOICE SO I KEEP IT").
+	true.
 // I did not make the choice first
 +commitedGoal(X,Y,FX,FY) : .my_name(Me) & going(X,Y,FX,FY)[source(A)] & not (A==Me) <-
-	-commitedGoal(X,Y,FX,FY).
+	-commitedGoal(X,Y,FX,FY);
+	.wait(50).
 
 +arrived(X,Y,FX,FY)[source(A)] : .my_name(Me) & not (A==Me) & going(X,Y,FX,FY)[source(A)] <-
-	.print("****Agent ", A, " got to goal (", X, ",", Y, ") for fire at (", FX, ",", FY,")");
-	-going(X,Y,FX,FY)[source(A)].
-+arrived(X,Y,FX,FY)[source(A)] : .my_name(Me) & not(A==Me) & not going(X,Y,FX,FY)[source(A)] <- .print("****Ignored 'arrived' message").
+	-going(X,Y,FX,FY)[source(A)];
+	true.
++arrived(X,Y,FX,FY)[source(A)] : .my_name(Me) & not(A==Me) & not going(X,Y,FX,FY)[source(A)] <- 
+	true.
 
 /**
  * Inform other agents of this agent's intention in going to a given cell.
@@ -157,13 +154,11 @@
  */
  
 +!pos(X, Y,FX,FY) : not pos(X, Y)  & not extinguished & not extinguishing<-
-.print("****Moving now to (", X , " ", Y,")");
  	!move;
  	!pos(X, Y,FX,FY).
 	
 +!pos(X, Y,FX,FY) : pos(X, Y) & not extinguished & not extinguishing <-
 	+extinguishing;
-.print("****Calling extinguish at (", FX , " ", FY,")");
  	!extinguish;
  	-moving(X, Y);
  	!informOthersOfSuccess(X,Y,FX,FY);
@@ -179,7 +174,6 @@
  */
  	
 +!extinguish : not extinguished <-	
-.print("****Now extinguishing");		
 	!extinguishFire;
 	-commitedGoal(_,_,_,_).
 	
