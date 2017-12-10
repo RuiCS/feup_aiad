@@ -81,7 +81,7 @@
  
 +!scan : not extinguished <-
 	!findNearestFire;
-	//!savePeople;
+	!savePeople;
 	!scan.
 
 +!scan : extinguished <-
@@ -97,7 +97,7 @@
 	-+moving(X, Y);
 	!pos(X, Y,FCX,FCY).
 	
-+goal(X, Y) : not moving(X, Y) & not commitedGoal(_,_,_,_) & not extinguished <-
++goal(X, Y) : not moving(X, Y) & not commitedGoal(_,_,_,_) & not extinguished & fireAt(_,_)<-
 	?fireAt(FX,FY);
 	!informOthersOfPlan(X,Y,FX,FY);
 	-+moving(X, Y);

@@ -73,8 +73,8 @@ public class ForestPanel extends JPanel {
 		this.initialState = new int[forest.length][forest[0].length];
 		for (int i = 0; i < forest.length; i++) {
 			for (int j = 0; j < forest[i].length; j++) {
-				
-				// TODO maybe improve this
+
+
 				if (forest[i][j] == FIRETILE) this.initialState[i][j] = NORMALTILE;
 				else this.initialState[i][j] = forest[i][j];
 			}
@@ -93,14 +93,13 @@ public class ForestPanel extends JPanel {
 	public ForestPanel(int posX, int posY, int windX, int windY, int[][]forest) {
 		this.windX = windX;
 		this.windY = windY;
-		// TODO change
 		this.forest = forest;
 
 		this.initialState = new int[forest.length][forest[0].length];
 		for (int i = 0; i < forest.length; i++) {
 			for (int j = 0; j < forest[i].length; j++) {
-				
-				// TODO maybe improve this
+
+
 				if (forest[i][j] == FIRETILE) this.initialState[i][j] = NORMALTILE;
 				else this.initialState[i][j] = forest[i][j];
 			}
@@ -110,7 +109,6 @@ public class ForestPanel extends JPanel {
 	
 	
 	public ForestPanel(String dummy) {
-		// TODO change
 		this.initRandomForest(40,40);
 		this.defaultConfig();
 	}

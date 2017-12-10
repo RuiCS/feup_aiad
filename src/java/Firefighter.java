@@ -96,8 +96,6 @@ public abstract class Firefighter {
 			
 			if (forest.getForest() != null) {
 				
-				// TODO proper initial position
-				
 				// initial position and direction
 				int x = ThreadLocalRandom.current().nextInt(0, ForestPanel.WIDTH);
 				int y = ThreadLocalRandom.current().nextInt(0, ForestPanel.HEIGHT);
@@ -440,6 +438,7 @@ public abstract class Firefighter {
 	        			System.out.println("there's a person at ("+ j + " "+ i+")");
 	        			fireFightingInfo = lookAroundPerson(forest, j, i, pos);
 
+	        	        //System.out.println("Victim fire info: (" + fireFightingInfo[0] + " " + fireFightingInfo[1] + " " + fireFightingInfo[2] + ")");
 	        			// if it's a victim, check distance to agent (it goes to the closer one)
 	        			if(fireFightingInfo[0] != -1) {
 	        				
@@ -503,9 +502,7 @@ public abstract class Firefighter {
 		        System.out.println("[" + agName + "] There is no safe spot around the victim fire located at (" + victimFirex + ", " + victimFirey + ")!");
 		        return;
 	        }
-	        
-	        //TODO maybe verificacoes? se vars nao estao == a inicializacao
-	        
+	        	        
 	        // verbose
 	        //System.out.println("[" + agName + "] Nearest victim located at (" + peoplex + ", " + peopley + ").");
 	        //System.out.println("[" + agName + "] Nearest victim FIRE located at (" + victimFirex + ", " + victimFirey + ").");
@@ -864,7 +861,6 @@ public abstract class Firefighter {
 	        
 	        // place agent on the environment
 	        mforest[y][x] = forest.getInitialForest()[y][x];
-	        //mforest[y][x] = ForestPanel.NORMALTILE; // TODO
 	        mforest[ny][nx] = ForestPanel.FIREFIGHTER;
 	        
 	        if (found) {

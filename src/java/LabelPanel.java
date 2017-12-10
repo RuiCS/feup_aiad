@@ -105,9 +105,7 @@ public class LabelPanel extends JPanel {
 		tilesPanel.add(victimColor, constraints);
 		constraints.gridx++;
 		tilesPanel.add(victimLabel, constraints);
-		
-		// TODO VICTIMS
-		
+				
 		constraints.gridy = 0;
 		constraints.gridx = 0;
 		this.add(tilesPanel, constraints);
