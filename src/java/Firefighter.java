@@ -682,7 +682,7 @@ public abstract class Firefighter {
 		int[] fireInfo = {-1,-1,-1};
 		
 		// person is in danger if fire is closer than 1 cell
-        if (y+1 < ForestPanel.HEIGHT && mforest[y+1][x] == ForestPanel.FIRETILE){  //forest[y][x]
+		if (y+1 < ForestPanel.HEIGHT && mforest[y+1][x] == ForestPanel.FIRETILE){  //forest[y][x]
         	res[1] = y + 1; res[0] = x;
         	int[] dir = thereIsASafeSpotNear(forest, res[0], res[1], currPos);
         	fireInfo[0] = res[0];
@@ -721,7 +721,54 @@ public abstract class Firefighter {
         	if(fireInfo[0] != -1) {
         		return fireInfo;
        	 	}
-        } return fireInfo;
+        }
+        //diagonal
+        if ((y+1 < ForestPanel.HEIGHT && x+1 < ForestPanel.WIDTH)
+        		&& mforest[y+1][x+1] == ForestPanel.FIRETILE){  //forest[y][x]
+        	res[1] = y + 1; res[0] = x + 1;
+        	int[] dir = thereIsASafeSpotNear(forest, res[0], res[1], currPos);
+        	fireInfo[0] = res[0];
+        	fireInfo[1] = res[1];
+        	fireInfo[2] = dir[0];
+        	if(fireInfo[0] != -1) {
+        		return fireInfo;
+        	}
+        } 
+        if ((x+1 < ForestPanel.WIDTH && y-1 > 0) 
+        		&& mforest[y-1][x+1] == ForestPanel.FIRETILE){
+        	res[1] = y-1; res[0] = x + 1;
+        	int[] dir = thereIsASafeSpotNear(forest, res[0], res[1], currPos);
+        	fireInfo[0] = res[0];
+        	fireInfo[1] = res[1];
+        	fireInfo[2] = dir[0];
+        	if(fireInfo[0] != -1) {
+        		return fireInfo;
+       	 	}
+        }
+        if((y-1 > 0 && x-1 > 0 ) 
+        		&& mforest[y-1][x-1] == ForestPanel.FIRETILE){
+        	res[1] = y - 1; res[0] = x - 1;
+        	int[] dir = thereIsASafeSpotNear(forest, res[0], res[1], currPos);
+        	fireInfo[0] = res[0];
+        	fireInfo[1] = res[1];
+        	fireInfo[2] = dir[0];
+         	if(fireInfo[0] != -1) {
+        		return fireInfo;
+        	}
+        }
+        if((x-1 > 0  && y+1 < ForestPanel.HEIGHT) 
+        	&& mforest[y+1][x-1] == ForestPanel.FIRETILE){
+        	res[1] = y+1; res[0] = x - 1;
+        	int[] dir = thereIsASafeSpotNear(forest, res[0], res[1], currPos);
+        	fireInfo[0] = res[0];
+        	fireInfo[1] = res[1];
+        	fireInfo[2] = dir[0];
+        	if(fireInfo[0] != -1) {
+        		return fireInfo;
+       	 	}
+        }
+        
+        return fireInfo;
         
 	}
 	
