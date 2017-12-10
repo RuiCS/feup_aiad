@@ -260,9 +260,9 @@ public abstract class Firefighter {
 	        addPercept(forest, agName, "facing(" + dir + ")");
 	        
 	        // verbose
-	        //System.out.println("[" + agName + "] My position is ("+x+", "+y+").");
-	        //System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
-	        //System.out.println("[" + agName + "] Planning to move to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
+	        System.out.println("[" + agName + "] My position is ("+x+", "+y+").");
+	        System.out.println("[" + agName + "] Nearest fire located at (" + firex + ", " + firey + ").");
+	        System.out.println("[" + agName + "] Planning to move to (" + newx + ", " + newy + "). Facing '" + dir + "'.");
 	       
 		}
 		catch (Exception e) {
@@ -292,13 +292,12 @@ public abstract class Firefighter {
 	        // verbose
 	        int firex = 0;
 	        int firey = 0;
-	        
+	System.out.println("Gonna EXTINGUISH from (" + x + ", "+y+") to " +dir);        
 	        switch (dir) {
 	        
 				case "up":
 					mforest[y-1][x] = ForestPanel.NORMALTILE; // TODO
 					
-					// verbose
 					firex = x;
 					firey = y-1;
 					
@@ -307,7 +306,6 @@ public abstract class Firefighter {
 				case "down":
 					mforest[y+1][x] = ForestPanel.NORMALTILE;
 					
-					// verbose
 					firex = x;
 					firey = y+1;
 					
@@ -316,7 +314,6 @@ public abstract class Firefighter {
 				case "left":
 					mforest[y][x-1] = ForestPanel.NORMALTILE;
 					
-					// verbose
 					firex = x-1;
 					firey = y;
 					
@@ -325,7 +322,6 @@ public abstract class Firefighter {
 				case "right":
 					mforest[y][x+1] = ForestPanel.NORMALTILE;
 					
-					// verbose
 					firex = x+1;
 					firey = y;
 					
@@ -342,6 +338,14 @@ public abstract class Firefighter {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		// update agent beliefs
+        removePerceptsByUnif(forest, agName, "fireAt(X, Y)");
+        
+        removePerceptsByUnif(forest, agName, "goal(X, Y)");
+        
+        removePerceptsByUnif(forest, agName, "facing(X)");
+		
 	}
 	
 	/**
@@ -406,21 +410,21 @@ public abstract class Firefighter {
 		        				//set fire position and safe direction
 		        				victimFirex = fireFightingInfo[0];
 		        				victimFirey = fireFightingInfo[1];
-		        				switch (fireFightingInfo[2]) {
+		        				switch (fireFightingInfo[2]) { //fight fire facing it
 		        					case 0: {
-		        						safeDir = "up";
-		        						break;}
-
-		        					case 1: {
 		        						safeDir = "down";
 		        						break;}
 
+		        					case 1: {
+		        						safeDir = "up";
+		        						break;}
+
 		        					case 2: {
-		        						safeDir = "left";
+		        						safeDir = "right";
 		        						break;}
 
 		        					case 3: {
-		        						safeDir = "right";
+		        						safeDir = "left";
 		        						break;}
 		        				}
 

@@ -77,12 +77,12 @@
  */
  
 +!scan : not extinguished <-
-	//!findNearestFire;
+	!findNearestFire;
 	!savePeople;
 	!scan.
 
 +!scan : extinguished <-
-	.print("Scanning stopped, there are no more fires!").
+	.print("****Scanning stopped, there are no more fires!").
 
 
 /**
@@ -106,6 +106,9 @@
 	-+moving(X, Y);
 	!pos(X, Y,FX,FY).
 	
++goal(X,Y) : true <-
+	.print("****Someone extinguished the fire where I was going.").
+	
 
 /**
  * The colaboration algorithm:
@@ -117,18 +120,18 @@
 
 // I made the choice first
 +going(X,Y,FX,FY)[source(A)] : .my_name(Me) & not (A == Me) & commitedGoal(X,Y,FX,FY)<- 
-	.print("Received Going(",X,",",Y,")[source(",A,")] - I MADE THIS CHOICE FIRST").
+	.print("****Received Going(",X,",",Y,")[source(",A,")] - I MADE THIS CHOICE FIRST").
 // I made a different choice
 +going(X,Y,FX,FY)[source(A)] : .my_name(Me) & not (A == Me) & not commitedGoal(X,Y,FX,FY)<- 
-	.print("Received Going(",X,",",Y,")[source(",A,")] - I MADE A DIFFERENT CHOICE SO I KEEP IT").
+	.print("****Received Going(",X,",",Y,")[source(",A,")] - I MADE A DIFFERENT CHOICE SO I KEEP IT").
 // I did not make the choice first
 +commitedGoal(X,Y,FX,FY) : .my_name(Me) & going(X,Y,FX,FY)[source(A)] & not (A==Me) <-
 	-commitedGoal(X,Y,FX,FY).
 
 +arrived(X,Y,FX,FY)[source(A)] : .my_name(Me) & not (A==Me) & going(X,Y,FX,FY)[source(A)] <-
-	.print("Agent ", A, " got to goal (", X, ",", Y, ") for fire at (", FX, ",", FY,")");
+	.print("****Agent ", A, " got to goal (", X, ",", Y, ") for fire at (", FX, ",", FY,")");
 	-going(X,Y,FX,FY)[source(A)].
-+arrived(X,Y,FX,FY)[source(A)] : .my_name(Me) & not(A==Me) & not going(X,Y,FX,FY)[source(A)] <- .print("Ignored 'arrived' message").
++arrived(X,Y,FX,FY)[source(A)] : .my_name(Me) & not(A==Me) & not going(X,Y,FX,FY)[source(A)] <- .print("****Ignored 'arrived' message").
 
 /**
  * Inform other agents of this agent's intention in going to a given cell.
@@ -160,7 +163,7 @@
 	
 +!pos(X, Y,FX,FY) : pos(X, Y) & not extinguished & not extinguishing <-
 	+extinguishing;
-.print("****Extinguishing (", FX , " ", FY,")");
+.print("****Calling extinguish at (", FX , " ", FY,")");
  	!extinguish;
  	-moving(X, Y);
  	!informOthersOfSuccess(X,Y,FX,FY);
@@ -175,8 +178,10 @@
  * (based on the direction the agent is facing)
  */
  	
-+!extinguish : not extinguished <-			
-	!extinguishFire.
++!extinguish : not extinguished <-	
+.print("****Now extinguishing");		
+	!extinguishFire;
+	-commitedGoal(_,_,_,_).
 	
-+!extinguish : extinguished <- .print("All the fires have been extinguished!").
++!extinguish : extinguished <- .print("****All the fires have been extinguished!").
 	
